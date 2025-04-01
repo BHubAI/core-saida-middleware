@@ -1,6 +1,6 @@
 import logging
 
-from src.db.session import SessionLocal
+from db.session import SessionLocal
 
 
 logging.basicConfig(level=logging.INFO)

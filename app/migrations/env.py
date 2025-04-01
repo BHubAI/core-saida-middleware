@@ -10,8 +10,8 @@ from sqlmodel import SQLModel
 
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
 
-from src.core.config import settings  # noqa
-from src.models import *  # noqa
+from core.config import settings  # noqa
+from models import *  # noqa
 
 
 # this is the Alembic Config object, which provides

@@ -14,7 +14,7 @@ jobs:
       - name: Run unit tests
         run: |
           docker compose -f ops/docker-compose.test.yml up --detach --wait
-          docker compose -f ops/docker-compose.test.yml exec backend pytest --cov-report=xml:/data/coverage.xml --cov=src/ tests/
+          docker compose -f ops/docker-compose.test.yml exec app pytest --cov-report=xml:/data/coverage.xml --cov=app/ tests/
       - name: Codecov
         if: success()
         uses: codecov/codecov-action@v3

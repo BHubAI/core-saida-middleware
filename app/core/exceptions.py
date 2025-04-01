@@ -4,3 +4,4 @@ class CoreSaidaOrchestratorException(Exception):
 
 class ObjectNotFound(CoreSaidaOrchestratorException):
     pass
+

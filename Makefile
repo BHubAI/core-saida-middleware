@@ -33,11 +33,11 @@ alembic-migrate:
 # lint
 test:
 	@echo "running pytest...."
-	docker compose exec {{ cookiecutter.backend_container_name }} pytest --cov-report xml --cov=src tests/
+	docker compose exec {{ cookiecutter.backend_container_name }} pytest --cov-report xml --cov=app tests/
 
 lint:
 	@echo "running ruff...."
-	docker compose exec {{ cookiecutter.backend_container_name }} ruff check src
+	docker compose exec {{ cookiecutter.backend_container_name }} ruff check app
 
 black:
 	@echo "running black...."
@@ -45,12 +45,12 @@ black:
 
 mypy:
 	@echo "running mypy...."
-	docker compose exec {{ cookiecutter.backend_container_name }} mypy src/
+	docker compose exec {{ cookiecutter.backend_container_name }} mypy app/
 
 # database
 init-db: alembic-init alembic-migrate
 	@echo "initializing database...."
-	docker compose exec {{ cookiecutter.backend_container_name }} python3 src/db/init_db.py
+	docker compose exec {{ cookiecutter.backend_container_name }} python3 app/db/init_db.py
 
 # misc
 check: BREW-exists

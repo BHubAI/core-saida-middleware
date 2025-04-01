@@ -38,4 +38,4 @@ repos:
     rev: 5.13.2
     hooks:
       - id: isort
-        args: ["--settings-path=./backend/pyproject.toml"]
+        args: ["--settings-path=./pyproject.toml"]

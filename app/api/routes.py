@@ -1,16 +1,32 @@
-from fastapi import APIRouter, status
-from fastapi.responses import PlainTextResponse, Response
+from fastapi import APIRouter, status, FastAPI
+from fastapi.responses import PlainTextResponse, JSONResponse
 
-from src.api.v1 import health
-
-
-home_router = APIRouter()
-
-
-@home_router.get("/", response_description="Homepage", include_in_schema=False)
-def home() -> Response:
-    return PlainTextResponse("127.0.0.1", status_code=status.HTTP_200_OK)
+from api.v1 import health
+from api.v1.camunda.side_effect import SideEffectEndpoint
+from api.base.endpoints import BaseEndpoint
 
 
-api_router = APIRouter()
-api_router.include_router(health.router)
+class Routers:
+    def __init__(self):
+        self.endpoints: list[BaseEndpoint] = [
+            SideEffectEndpoint()
+        ]
+    
+    def get_routers(self):
+        for endpoint in self.endpoints:
+            yield endpoint.get_router()
+
+
+def register_routes(app: FastAPI):
+    api_routers = Routers()
+
+    @app.get("/robots.txt")
+    def robots():
+        return PlainTextResponse("User-agent: *\nDisallow: /")
+    
+    @app.get("/health")
+    def health_check() -> JSONResponse:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
+    
+    for router in api_routers.get_routers():
+        app.include_router(router)

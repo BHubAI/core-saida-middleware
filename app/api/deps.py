@@ -1,6 +1,6 @@
 from redis import Redis
 
-from src.core.config import settings
+from core.config import settings
 
 
 def get_redis_url() -> str:

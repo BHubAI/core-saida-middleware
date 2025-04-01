@@ -43,7 +43,7 @@ services:
   nginx:
     image: ${REGISTRY}/nginx:${GITHUB_SHA}
     environment:
-      - UPSTREAMS=/:backend:8000
+      - UPSTREAMS=/:app:8000
       - NGINX_SERVER_NAME=api-staging.cores_db.com # without this, /admin redirects to https://_/
       - ENABLE_SSL=true
       - HTTPS_REDIRECT=true
@@ -62,10 +62,10 @@ services:
     <<: *default_deploy
 
   backend:
-    image: ${REGISTRY}/backend:${GITHUB_SHA}
+    image: ${REGISTRY}/app:${GITHUB_SHA}
     environment:
     labels:
-      com.cores_db.container.name: cores_db-backend
+      com.cores_db.container.name: cores_db-app
       com.cores_db.env: staging
       com.cores_db.project: cores_db-cloud
     <<: [*fastapi_envs, *default_deploy]
@@ -73,4 +73,4 @@ services:
       - data-vol:/data
     command: bash -c "
       alembic upgrade head &&
-      gunicorn src.main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --log-level=info --timeout=120"
+      gunicorn main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --log-level=info --timeout=120"

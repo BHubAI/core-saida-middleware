@@ -4,7 +4,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from src.core.config import settings
+from core.config import settings
 
 
 def get_engine() -> Engine:
@@ -20,19 +20,24 @@ def get_session_maker() -> sessionmaker:
     return sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-
 def add_postgresql_extension() -> None:
-    with get_session_maker() as db:
+    SessionLocal = get_session_maker()
+    session = SessionLocal()
+    try:
         query = text("CREATE EXTENSION IF NOT EXISTS pg_trgm")
-        db.execute(query)
+        session.execute(query)
+        session.commit()
+    finally:
+        session.close()
 
 
 def get_session() -> Generator[Session, None, None]:
-    with get_session_maker() as session:
-        try:
-            yield session
-        except Exception as e:
-            session.rollback()
-            raise e
-        finally:
-            session.close()
+    SessionLocal = get_session_maker()
+    session = SessionLocal()
+    try:
+        yield session
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()
