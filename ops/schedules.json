@@ -1,0 +1,9 @@
+{
+    "process_start": [
+        {
+            "name": "Fechamento folha 3",
+            "cron": "0/5 0 * * *",
+            "process_key": "fechamento_folha_3"
+        }
+    ]
+}

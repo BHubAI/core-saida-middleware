@@ -12,6 +12,10 @@ class Settings(BaseSettings):
         extra="allow",  # This allows extra fields from environment
     )
 
+    # AWS settings
+    AWS_ROLE_ARN: str = Field(default="")
+    API_URL: str = Field(default="")
+
     # App settings
     VERSION: str = Field(default="v1")
     ENV: str = Field(default="dev")
