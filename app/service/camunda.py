@@ -14,18 +14,14 @@ class BaseCamundaProcess:
     def __init__(self, process_key: str):
         self.process_key = process_key
 
-    def start_process(self, variables: dict):
+    def start_process(self):
         current_env = settings.ENV
 
         if current_env == "prod":
-            logger.info(
-                f"Starting process {self.process_key} with variables {variables} in PRODUCTION"
-            )
+            logger.info(f"Starting process {self.process_key} in PRODUCTION")
             self.start_production_process()
         else:
-            logger.info(
-                f"Starting process {self.process_key} with variables {variables} in {current_env}"
-            )
+            logger.info(f"Starting process {self.process_key} in {current_env}")
             self.start_dev_process()
 
     def start_production_process(self):
@@ -35,7 +31,7 @@ class BaseCamundaProcess:
     def start_dev_process(self):
         """Start a process in Camunda dev environment"""
         logger.info(f"Starting process {self.process_key} in Camunda DEV")
-        url = f"{settings.CAMUNDA_URL}/process-definition/key/{self.process_key}/start"
+        url = f"{settings.CAMUNDA_ENGINE_URL}/process-definition/key/{self.process_key}/start"
         headers = {
             "Content-Type": "application/json",
         }
@@ -50,11 +46,9 @@ class BaseCamundaProcess:
         response.raise_for_status()
         logger.info(f"Process {self.process_key} started in Camunda DEV")
 
-    def get_process_variables(self, process_instance_id: str):
+    def get_process_variables(self):
         """Get process variables"""
-        logger.info(
-            f"Empty process variables for {self.process_key} with process instance id {process_instance_id}"
-        )
+        logger.info(f"Empty process variables for {self.process_key}")
         return {}
 
 
@@ -64,7 +58,7 @@ class FechamentoFolha3Process(BaseCamundaProcess):
     def __init__(self):
         super().__init__("fechamento_folha_dp_3")
 
-    def get_process_variables(self, process_instance_id: str):
+    def get_process_variables(self):
         """Get process variables"""
         return {
             "variables": {

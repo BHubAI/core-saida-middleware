@@ -14,6 +14,8 @@ class Settings(BaseSettings):
 
     # App settings
     VERSION: str = Field(default="v1")
+    ENV: str = Field(default="dev")
+    DEBUG: bool = Field(default=False)
 
     # Camunda settings
     CAMUNDA_ENGINE_URL: str = Field(default="")

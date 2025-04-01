@@ -1,8 +1,13 @@
 import logging
 
+import fastapi
 from api.base.endpoints import BaseEndpoint
-from core.exceptions import ObjectNotFound
+from db.session import get_session
+from schemas.camunda_schema import ProcessKeyRequest
 from service import camunda
+from sqlmodel import Session
+
+from app.core.exceptions import ObjectNotFound
 
 
 logger = logging.getLogger(__name__)
@@ -17,15 +22,14 @@ class ProcessStarterEndpoint(BaseEndpoint):
         super().__init__(tags=["process_starter"], prefix=ROUTE_PREFIX)
 
         @self.router.post("/")
-        async def start_process(self, process_key: str):
-            """Start a process"""
-            logger.info("Starting process")
-            process_name = "fechamento_folha_3"
+        async def start_process(
+            request: ProcessKeyRequest, db: Session = fastapi.Depends(get_session)
+        ):
+            """Start process"""
+            logger.info(f"Starting process with key: {request.process_key}")
 
-            process = getattr(camunda, process_name, None)
-            if process is None:
-                logger.error(f"Process {process_name} not found")
-                raise ObjectNotFound()
+            if not hasattr(camunda, request.process_key):
+                raise ObjectNotFound(f"Process {request.process_key} not found")
 
-            process.start_process({})
-            return {"message": "Process started"}
+            process = getattr(camunda, request.process_key, None)
+            process.start_process()

@@ -1,8 +1,10 @@
-import pydantic
+from pydantic import BaseModel
 
 
-class Event(pydantic.BaseModel):
-    """Event"""
+class ProcessKeyRequest(BaseModel):
+    process_key: str
 
-    name: str
-    data: dict
+
+class Event(BaseModel):
+    event_type: str
+    event_data: dict
