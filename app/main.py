@@ -15,9 +15,11 @@ from db.session import add_postgresql_extension
 
 logger = logging.getLogger(__name__)
 
+
 def on_startup() -> None:
     # add_postgresql_extension()
     logger.info("FastAPI app running...")
+
 
 def create_service() -> FastAPI:
     tags_metadata = [
@@ -43,7 +45,9 @@ def create_service() -> FastAPI:
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
         # TODO: log exception
-        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": exc.errors()})
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST, content={"detail": exc.errors()}
+        )
 
     @app.exception_handler(ObjectNotFound)
     async def object_not_found_exception_handler(request: Request, exc: ObjectNotFound):
@@ -51,10 +55,15 @@ def create_service() -> FastAPI:
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": exc.errors()})
 
     @app.exception_handler(CoreSaidaOrchestratorException)
-    async def core_saida_orchestrator_exception_handler(request: Request, exc: CoreSaidaOrchestratorException):
+    async def core_saida_orchestrator_exception_handler(
+        request: Request, exc: CoreSaidaOrchestratorException
+    ):
         # TODO: log exception
-        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": exc.errors()})
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": exc.errors()}
+        )
 
     return app
+
 
 app = create_service()

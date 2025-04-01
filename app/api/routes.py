@@ -8,10 +8,8 @@ from api.base.endpoints import BaseEndpoint
 
 class Routers:
     def __init__(self):
-        self.endpoints: list[BaseEndpoint] = [
-            SideEffectEndpoint()
-        ]
-    
+        self.endpoints: list[BaseEndpoint] = [SideEffectEndpoint()]
+
     def get_routers(self):
         for endpoint in self.endpoints:
             yield endpoint.get_router()
@@ -23,10 +21,10 @@ def register_routes(app: FastAPI):
     @app.get("/robots.txt")
     def robots():
         return PlainTextResponse("User-agent: *\nDisallow: /")
-    
+
     @app.get("/health")
     def health_check() -> JSONResponse:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
-    
+
     for router in api_routers.get_routers():
         app.include_router(router)
