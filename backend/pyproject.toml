@@ -5,7 +5,7 @@ description = "Base project for building fastapi backends"
 authors = ["nickatnight <nickkelly.858@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "~3.11"
+python = "~3.12"
 alembic = "1.13.2"
 sqlalchemy = "2.0.34"
 psycopg = {extras = ["binary"], version = "3.1.13"}
