@@ -16,7 +16,7 @@ class EventBridgeService:
     def __init__(self):
         self.client = boto3.client("scheduler")
         self.schedule_group = "process-schedules"
-        self.target_url = os.getenv("API_URL")
+        self.target_url = os.getenv("CORE_APP_URL")
 
     def schedule_exists(self, schedule_name: str) -> bool:
         """Check if a schedule with the given name exists."""
@@ -44,10 +44,10 @@ class EventBridgeService:
                 FlexibleTimeWindow={"Mode": "OFF"},
                 Target={
                     "Arn": self.target_url,
-                    "RoleArn": os.getenv("AWS_ROLE_ARN"),
+                    "RoleArn": os.getenv("AWS_EVENTBRIDGE_ROLE_ARN"),
                     "HttpTarget": {
                         "Path": "/api/process/start-process",
-                        "Port": "8000",
+                        "Port": "80",
                         "Method": "POST",
                         "Headers": [{"Key": "Content-Type", "Value": "application/json"}],
                         "Body": json.dumps({"process_key": process_key}),

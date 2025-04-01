@@ -2,12 +2,11 @@ import logging
 
 import fastapi
 from api.base.endpoints import BaseEndpoint
+from core.exceptions import ObjectNotFound
 from db.session import get_session
 from schemas.camunda_schema import ProcessKeyRequest
 from service import camunda
 from sqlmodel import Session
-
-from app.core.exceptions import ObjectNotFound
 
 
 logger = logging.getLogger(__name__)
@@ -31,5 +30,5 @@ class ProcessStarterEndpoint(BaseEndpoint):
             if not hasattr(camunda, request.process_key):
                 raise ObjectNotFound(f"Process {request.process_key} not found")
 
-            process = getattr(camunda, request.process_key, None)
+            process = getattr(camunda, request.process_key)
             process.start_process()
