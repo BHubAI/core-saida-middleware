@@ -24,9 +24,6 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = Field(default="")
     POSTGRES_URL: Union[Optional[PostgresDsn], Optional[str]] = None
 
-    REDIS_HOST: str = Field(default="")
-    REDIS_PORT: str = Field(default="")
-
     DB_POOL_SIZE: int = Field(default=83)
     WEB_CONCURRENCY: int = Field(default=9)
     MAX_OVERFLOW: int = Field(default=64)

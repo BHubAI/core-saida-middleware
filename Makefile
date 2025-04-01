@@ -3,7 +3,7 @@ all:
 # docker
 up:
 	@echo "bringing up project...."
-	docker compose up
+	docker compose up -d
 
 down:
 	@echo "bringing down project...."
