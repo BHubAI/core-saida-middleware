@@ -1,14 +1,13 @@
-from fastapi import APIRouter, status, FastAPI
-from fastapi.responses import PlainTextResponse, JSONResponse
-
-from api.v1 import health
-from api.v1.camunda.side_effect import SideEffectEndpoint
 from api.base.endpoints import BaseEndpoint
+from api.v1.camunda.process_starter import ProcessStarterEndpoint
+from api.v1.camunda.side_effect import SideEffectEndpoint
+from fastapi import FastAPI, status
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 
 class Routers:
     def __init__(self):
-        self.endpoints: list[BaseEndpoint] = [SideEffectEndpoint()]
+        self.endpoints: list[BaseEndpoint] = [SideEffectEndpoint(), ProcessStarterEndpoint()]
 
     def get_routers(self):
         for endpoint in self.endpoints:

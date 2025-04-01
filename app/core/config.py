@@ -6,33 +6,38 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=None,  # Disable .env file loading
+        env_file_encoding="utf-8",
+        extra="allow",  # This allows extra fields from environment
+    )
 
     # App settings
-    SECRET_KEY: str = Field(default="")
-    ENV: str = Field(default="dev")
-    PROJECT_NAME: str = Field(default="core-saida-orchestrator")
     VERSION: str = Field(default="v1")
-    DEBUG: bool = Field(default=True)
-    PYTHONPATH: str = Field(default="")
+
+    # Camunda settings
+    CAMUNDA_ENGINE_URL: str = Field(default="")
+    CAMUNDA_USERNAME: str = Field(default="")
+    CAMUNDA_PASSWORD: str = Field(default="")
 
     # 60 minutes * 24 hours * 8 days = 8 days
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
-    # SERVER_NAME: Optional[str] = Field(..., env="NGINX_HOST")
-    BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = []
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=60 * 24 * 8)
+    BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = Field(default=[])
     LOG_LEVEL: int = Field(default=logging.INFO)
 
+    # Database settings
     POSTGRES_USER: str = Field(default="")
     POSTGRES_PASSWORD: str = Field(default="")
     POSTGRES_HOST: str = Field(default="")
     POSTGRES_PORT: str = Field(default="")
     POSTGRES_DB: str = Field(default="")
-    POSTGRES_URL: Union[Optional[PostgresDsn], Optional[str]] = None
+    POSTGRES_URL: Union[Optional[PostgresDsn], Optional[str]] = Field(default=None)
 
+    # Pool settings
     DB_POOL_SIZE: int = Field(default=83)
     WEB_CONCURRENCY: int = Field(default=9)
     MAX_OVERFLOW: int = Field(default=64)
-    POOL_SIZE: Optional[int] = None
+    POOL_SIZE: Optional[int] = Field(default=None)
 
     @field_validator("POOL_SIZE", mode="before")
     @classmethod
