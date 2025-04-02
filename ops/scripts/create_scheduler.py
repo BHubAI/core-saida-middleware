@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import Any
 
 import boto3
+import requests
 from botocore.exceptions import ClientError
+from requests_aws4auth import AWS4Auth
 
 
 logging.basicConfig(level=logging.INFO)
@@ -17,6 +19,10 @@ class EventBridgeService:
         self.client = boto3.client("scheduler")
         self.schedule_group = "process-schedules"
         self.target_url = os.getenv("CORE_APP_URL")
+        # Get AWS account ID and region from the current credentials
+        sts = boto3.client("sts")
+        self.account_id = sts.get_caller_identity()["Account"]
+        self.region = self.client.meta.region_name
 
     def schedule_exists(self, schedule_name: str) -> bool:
         """Check if a schedule with the given name exists."""
@@ -43,15 +49,18 @@ class EventBridgeService:
                 ScheduleExpression=f"cron({cron_expression})",
                 FlexibleTimeWindow={"Mode": "OFF"},
                 Target={
-                    "Arn": self.target_url,
+                    "Arn": f"arn:aws:scheduler:{self.region}:{self.account_id}:aws-sdk:http",
                     "RoleArn": os.getenv("AWS_EVENTBRIDGE_ROLE_ARN"),
-                    "HttpTarget": {
-                        "Path": "/api/process/start-process",
-                        "Port": "80",
-                        "Method": "POST",
-                        "Headers": [{"Key": "Content-Type", "Value": "application/json"}],
-                        "Body": json.dumps({"process_key": process_key}),
-                    },
+                    "Input": json.dumps(
+                        {
+                            "url": self.target_url,
+                            "path": "/api/process/start-process",
+                            "port": 80,
+                            "method": "POST",
+                            "headers": {"Content-Type": "application/json"},
+                            "body": {"process_key": process_key},
+                        }
+                    ),
                 },
                 State="ENABLED",
             )
@@ -79,6 +88,47 @@ class EventBridgeService:
             raise
 
 
+AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_REGION = os.getenv("AWS_REGION")
+AWS_ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID")
+SERVICE = "scheduler"
+
+# Autenticação
+auth = AWS4Auth(AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_REGION, SERVICE)
+
+
+def create_http_scheduler():
+    url = f"https://scheduler.{AWS_REGION}.amazonaws.com/schedules"
+
+    headers = {
+        "Content-Type": "application/json",
+        "X-Amz-Target": "Amazon.EventBridge.CreateSchedule",
+    }
+
+    payload = {
+        "Name": "meu-http-post",
+        "ScheduleExpression": "cron(0/5 * * * ? *)",  # 12h UTC
+        "Target": {
+            "Arn": "https://api.seu-endpoint.com/webhook",
+            "RoleArn": f"arn:aws:iam::{AWS_ACCOUNT_ID}:role/EventBridge-HTTP-Role",
+            "Input": json.dumps({"process_key": "fechamento_folha_dp_3"}),  # Body do POST
+            "HttpParameters": {"HeaderParameters": {"Content-Type": "application/json"}},
+            "RetryPolicy": {"MaximumRetryAttempts": 3},
+        },
+        "FlexibleTimeWindow": {"Mode": "OFF"},
+    }
+
+    response = requests.post(url, auth=auth, headers=headers, data=json.dumps(payload))
+
+    print(response.content)
+
+    if response.status_code == 200:
+        print("Agendamento criado com sucesso!")
+    else:
+        print(f"Erro: {response.status_code} - {response.text}")
+
+
 def main():
     """Initialize AWS EventBridge schedules from schedules.json"""
     try:
@@ -91,5 +141,9 @@ def main():
         raise
 
 
+def main_http_scheduler():
+    create_http_scheduler()
+
+
 if __name__ == "__main__":
-    main()
+    main_http_scheduler()
