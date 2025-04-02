@@ -8,7 +8,7 @@ from core.config import settings
 logger = logging.getLogger(__name__)
 
 
-class BaseCamundaProcess:
+class CamundaProcess:
     """Base class for Camunda processes"""
 
     def __init__(self, process_key: str):
@@ -28,6 +28,11 @@ class BaseCamundaProcess:
         """Start a process in production"""
         logger.info(f"Starting process {self.process_key} in PRODUCTION")
 
+    def get_business_key(self):
+        """Get the business key for the process"""
+        # TODO: Implement this to get a real business key
+        return self.process_key
+
     def start_dev_process(self):
         """Start a process in Camunda dev environment"""
         logger.info(f"Starting process {self.process_key} in Camunda DEV")
@@ -35,11 +40,17 @@ class BaseCamundaProcess:
         headers = {
             "Content-Type": "application/json",
         }
+        variables = self.get_process_variables()
+        variables["business_key"] = self.get_business_key()
+
+        payload = {
+            "variables": variables,
+        }
 
         response = requests.post(
             url,
             headers=headers,
-            json=self.get_process_variables(),
+            json=payload,
             auth=(settings.CAMUNDA_USERNAME, settings.CAMUNDA_PASSWORD),
         )
 
@@ -52,7 +63,7 @@ class BaseCamundaProcess:
         return {}
 
 
-class FechamentoFolha3Process(BaseCamundaProcess):
+class FechamentoFolha3Process(CamundaProcess):
     """Fechamento folha 3 process"""
 
     def __init__(self):
@@ -61,31 +72,29 @@ class FechamentoFolha3Process(BaseCamundaProcess):
     def get_process_variables(self):
         """Get process variables"""
         return {
-            "variables": {
-                "customer": {
-                    "value": json.dumps(
-                        {
-                            "trading_name": "Empresa Teste Cockpit",
-                            "cnpj": "60701190000104",
-                            "operational_status": {
-                                "hr_pay_day": 5,
-                                "accounting_dominio_code": "1234567890",
-                            },
-                            "customer_profile": "FAMILY_3",
-                            "company_tax_type": "NATIONAL_SIMPLE",
-                        }
-                    ),
-                    "type": "json",
-                },
-                "deadline": {"value": "2025-03-25", "type": "string"},
-                "competencia": {"value": "2025-03", "type": "string"},
-                "regime_tributario": {"value": "SIMPLES_NACIONAL", "type": "string"},
-                "cliente_possui_movimento_folha": {"value": "Com Movimento", "type": "string"},
-                "data_fechamento_folha": {"value": "2025-03-25", "type": "string"},
-                "cliente_elegibilidade": {"value": "valido", "type": "string"},
-                "assignee": {"value": "rafael.nunes@bhub.ai", "type": "string"},
-                "tem_movimento_folha": {"value": True, "type": "boolean"},
-            }
+            "customer": {
+                "value": json.dumps(
+                    {
+                        "trading_name": "Empresa Teste Cockpit",
+                        "cnpj": "60701190000104",
+                        "operational_status": {
+                            "hr_pay_day": 5,
+                            "accounting_dominio_code": "1234567890",
+                        },
+                        "customer_profile": "FAMILY_3",
+                        "company_tax_type": "NATIONAL_SIMPLE",
+                    }
+                ),
+                "type": "json",
+            },
+            "deadline": {"value": "2025-03-25", "type": "string"},
+            "competencia": {"value": "2025-03", "type": "string"},
+            "regime_tributario": {"value": "SIMPLES_NACIONAL", "type": "string"},
+            "cliente_possui_movimento_folha": {"value": "Com Movimento", "type": "string"},
+            "data_fechamento_folha": {"value": "2025-03-25", "type": "string"},
+            "cliente_elegibilidade": {"value": "valido", "type": "string"},
+            "assignee": {"value": "rafael.nunes@bhub.ai", "type": "string"},
+            "tem_movimento_folha": {"value": True, "type": "boolean"},
         }
 
 

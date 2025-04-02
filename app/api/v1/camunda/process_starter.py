@@ -6,6 +6,7 @@ from core.exceptions import ObjectNotFound
 from db.session import get_session
 from schemas.camunda_schema import ProcessKeyRequest
 from service import camunda
+from service.camunda import CamundaProcess
 from sqlmodel import Session
 
 
@@ -20,7 +21,7 @@ class ProcessStarterEndpoint(BaseEndpoint):
     def __init__(self):
         super().__init__(tags=["process_starter"], prefix=ROUTE_PREFIX)
 
-        @self.router.post("/")
+        @self.router.post("")
         async def start_process(
             request: ProcessKeyRequest, db: Session = fastapi.Depends(get_session)
         ):
@@ -30,5 +31,5 @@ class ProcessStarterEndpoint(BaseEndpoint):
             if not hasattr(camunda, request.process_key):
                 raise ObjectNotFound(f"Process {request.process_key} not found")
 
-            process = getattr(camunda, request.process_key)
+            process: CamundaProcess = getattr(camunda, request.process_key)
             process.start_process()
