@@ -21,7 +21,7 @@ services:
       - .env
     build:
       context: .
-      dockerfile: ./app/Dockerfile
+      dockerfile: ./ops/docker/dev/Dockerfile
       args:
         env: ${ENV}
     ports:

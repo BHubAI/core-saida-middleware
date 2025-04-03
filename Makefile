@@ -58,3 +58,14 @@ init-db: alembic-init alembic-migrate
 hooks: check
 	@echo "installing pre-commit hooks...."
 	pre-commit install
+
+# AWS ECR commands
+build-ecr:
+	@echo "building docker image...."
+	docker build --platform linux/amd64 -t core-saida/orchestrator -f ./ops/docker/staging/Dockerfile .
+
+push-ecr:
+	@echo "pushing to ECR...."
+	aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.us-east-2.amazonaws.com
+	docker tag core-saida/orchestrator:latest $(AWS_ACCOUNT_ID).dkr.ecr.us-east-2.amazonaws.com/core-saida/orchestrator:latest
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.us-east-2.amazonaws.com/core-saida/orchestrator:latest
