@@ -62,10 +62,28 @@ hooks: check
 # AWS ECR commands
 build-ecr:
 	@echo "building docker image...."
-	docker build --platform linux/amd64 -t core-saida/orchestrator -f ./ops/docker/staging/Dockerfile .
+	docker build --platform linux/amd64 \
+		--build-arg ENV_FILE=./ops/docker/staging/env \
+		-t core-saida/orchestrator \
+		-f ./ops/docker/staging/Dockerfile .
 
 push-ecr:
 	@echo "pushing to ECR...."
 	aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.us-east-2.amazonaws.com
 	docker tag core-saida/orchestrator:latest $(AWS_ACCOUNT_ID).dkr.ecr.us-east-2.amazonaws.com/core-saida/orchestrator:latest
 	docker push $(AWS_ACCOUNT_ID).dkr.ecr.us-east-2.amazonaws.com/core-saida/orchestrator:latest
+
+# Local container commands
+run-local:
+	@echo "running container locally...."
+	docker run -d \
+		--name core-saida-orchestrator \
+		-p 8000:8000 \
+		--env-file ./ops/docker/staging/env \
+		-e PYTHONPATH=/app \
+		core-saida/orchestrator
+
+stop-local:
+	@echo "stopping local container...."
+	docker stop core-saida-orchestrator
+	docker rm core-saida-orchestrator
