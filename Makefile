@@ -63,9 +63,9 @@ hooks: check
 build-ecr:
 	@echo "building docker image...."
 	docker build --platform linux/amd64 \
-		--build-arg ENV_FILE=./ops/docker/staging/env \
+		--build-arg ENV_FILE=./ops/docker/prod/env \
 		-t core-saida/orchestrator \
-		-f ./ops/docker/staging/Dockerfile .
+		-f ./ops/docker/prod/Dockerfile .
 
 push-ecr:
 	@echo "pushing to ECR...."
@@ -79,8 +79,7 @@ run-local:
 	docker run -d \
 		--name core-saida-orchestrator \
 		-p 8000:8000 \
-		--env-file ./ops/docker/staging/env \
-		-e PYTHONPATH=/app \
+		--env-file ./ops/docker/prod/env \
 		core-saida/orchestrator
 
 stop-local:
