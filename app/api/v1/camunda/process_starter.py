@@ -6,7 +6,7 @@ from core.exceptions import ObjectNotFound
 from db.session import get_session
 from schemas.camunda_schema import ProcessKeyRequest
 from service import camunda
-from service.camunda import CamundaProcess
+from service.camunda.base import CamundaProcess
 from sqlmodel import Session
 
 

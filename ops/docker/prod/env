@@ -1,9 +1,9 @@
 # app
-SECRET_KEY=test-key
-ENV=dev
+SECRET_KEY=Uj8K#mP9$vL2nX5@qR4wY7hC3bE6tN
+ENV=prod
 PROJECT_NAME=core-saida-orchestrator
 VERSION=v1
-DEBUG=True
+DEBUG=False
 
 # Database
 POSTGRES_USER=debug
@@ -13,22 +13,17 @@ POSTGRES_HOST=db
 POSTGRES_PORT=5432
 POSTGRES_URL=postgresql://debug:debug@db:5432/cores_db
 
-
 # BHub
 CORE_APP_URL=https://8980-200-7-124-1.ngrok-free.app
-CORE_APP_API_KEY='Kyp4Qegw9F7ThE31G5jpb6vXQ3aE9PE51Ui12Wo9'
+CORE_APP_API_KEY='<some api key>'
 
-# CAMUNDA_ENGINE_URL=https://orchestrator-gateway.bhub.ai/coresaida-prod/engine-rest
-CAMUNDA_ENGINE_URL=https://camunda.platform-dev.bhub.ai/engine-rest
-CAMUNDA_X_API_KEY='Kyp4Qegw9F7ThE31G5jpb6vXQ3aE9PE51Ui12Wo9'
-CAMUNDA_USERNAME=core
-CAMUNDA_PASSWORD='iE6D*2mZ3`/#'
-
-PYTHONPATH=${PYTHONPATH}:${PWD}/app
+CAMUNDA_ENGINE_URL=https://orchestrator-gateway.bhub.ai/coresaida-prod/engine-rest
+CAMUNDA_X_API_KEY='<get from secret>'
+CAMUNDA_USERNAME='<get from secret>'
+CAMUNDA_PASSWORD='<get from secret>'
 
 # AWS
 AWS_REGION=us-east-2
-AWS_ACCOUNT_ID=986738099360
-AWS_EVENTBRIDGE_ROLE_ARN="arn:aws:events:us-east-2:986738099360:rule/BridgeInvokeLambdaROle"
-AWS_ACCESS_KEY_ID=AKIA6LPRMQSQAUEGFQ5I
-AWS_SECRET_ACCESS_KEY='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'
+AWS_ACCOUNT_ID=<aws account id>
+AWS_ACCESS_KEY_ID=<aws access key>
+AWS_SECRET_ACCESS_KEY='<aws secret key>'
