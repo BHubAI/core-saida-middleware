@@ -1,24 +1,22 @@
 import logging
 
-from fastapi import FastAPI, Request, status
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
-
 from api import routes
 from core.config import settings
-from core.exceptions import ObjectNotFound, CoreSaidaOrchestratorException
-from db.session import add_postgresql_extension
+from core.exceptions import CoreSaidaOrchestratorException, ObjectNotFound
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from app.db.session import add_postgresql_extension
 
 
-logger = logging.getLogger(__name__)
+aws_logger = logging.getLogger(__name__)
 
 
 def on_startup() -> None:
-    # add_postgresql_extension()
-    logger.info("FastAPI app running...")
+    add_postgresql_extension()
+    aws_logger.info("FastAPI app running...")
 
 
 def create_service() -> FastAPI:
@@ -44,23 +42,25 @@ def create_service() -> FastAPI:
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
-        # TODO: log exception
+        aws_logger.error(f"Validation error: {exc.errors()}")
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST, content={"detail": exc.errors()}
         )
 
     @app.exception_handler(ObjectNotFound)
     async def object_not_found_exception_handler(request: Request, exc: ObjectNotFound):
-        # TODO: log exception
-        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": exc.errors()})
+        error_msg = str(exc)
+        aws_logger.error(f"Object not found: {error_msg}")
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": error_msg})
 
     @app.exception_handler(CoreSaidaOrchestratorException)
     async def core_saida_orchestrator_exception_handler(
         request: Request, exc: CoreSaidaOrchestratorException
     ):
-        # TODO: log exception
+        error_msg = str(exc)
+        aws_logger.error(f"Core Saida Orchestrator error: {error_msg}")
         return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": exc.errors()}
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": error_msg}
         )
 
     return app

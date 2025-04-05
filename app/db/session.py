@@ -1,10 +1,10 @@
-from typing import Generator
+from typing import Annotated, Generator
 
+from core.config import settings
+from fastapi import Depends
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
-
-from core.config import settings
 
 
 def get_engine() -> Engine:
@@ -41,3 +41,7 @@ def get_session() -> Generator[Session, None, None]:
         raise e
     finally:
         session.close()
+
+
+# Type alias for easier injection in FastAPI endpoints
+DBSession = Annotated[Session, Depends(get_session)]

@@ -6,8 +6,8 @@ from service.camunda.base import CamundaProcess
 
 
 class FechamentoFolha3Process(CamundaProcess):
-    def __init__(self):
-        super().__init__("fechamento_folha_dp_3")
+    def __init__(self, *args, **kwargs):
+        super().__init__("fechamento_folha_dp_3", *args, **kwargs)
 
     def get_process_variables(self):
         """Get process variables"""
@@ -38,4 +38,4 @@ class FechamentoFolha3Process(CamundaProcess):
         }
 
 
-fechamento_folha_3 = FechamentoFolha3Process()
+fechamento_folha_3 = FechamentoFolha3Process

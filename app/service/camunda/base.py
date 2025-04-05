@@ -2,6 +2,9 @@ import logging
 
 import requests
 from core.config import settings
+from db.session import DBSession
+
+from app.api.deps import DDLogger
 
 
 logger = logging.getLogger(__name__)
@@ -10,11 +13,19 @@ logger = logging.getLogger(__name__)
 class CamundaProcess:
     """Base class for Camunda processes"""
 
-    def __init__(self, process_key: str):
+    def __init__(self, process_key: str, db_session: DBSession, logger: DDLogger):
         self.process_key = process_key
+        self.db_session = db_session
+        self.logger = logger
+
+    def before_start(self):
+        """Before start process"""
+        pass
 
     def start_process(self):
         current_env = settings.ENV
+
+        self.before_start()
 
         if current_env == "prod":
             logger.info(f"Starting process {self.process_key} in PRODUCTION")
@@ -45,7 +56,7 @@ class CamundaProcess:
         payload = {
             "variables": variables,
         }
-        # TODO Use httpx and async request
+
         response = requests.post(
             url,
             headers=headers,

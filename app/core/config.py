@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = Field(default=[])
     LOG_LEVEL: int = Field(default=logging.INFO)
 
+    # Datadog settings
+    DD_AGENT_HOST: str = Field(default="datadog-agent")
+    DD_AGENT_PORT: int = Field(default=8125)
+    DD_ENV: str = Field(default="dev")
+    DD_SERVICE: str = Field(default="core-saida-orchestrator")
+    DD_VERSION: str = Field(default="1.0.0")
+
     # Database settings
     POSTGRES_USER: str = Field(default="")
     POSTGRES_PASSWORD: str = Field(default="")

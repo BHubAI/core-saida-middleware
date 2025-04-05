@@ -1,4 +1,5 @@
 from api.base.endpoints import BaseEndpoint
+from api.deps import Logger
 from api.v1.camunda.process_starter import ProcessStarterEndpoint
 from api.v1.camunda.side_effect import SideEffectEndpoint
 from fastapi import FastAPI, status
@@ -22,7 +23,8 @@ def register_routes(app: FastAPI):
         return PlainTextResponse("User-agent: *\nDisallow: /")
 
     @app.get("/health")
-    def health_check() -> JSONResponse:
+    def health_check(logger: Logger) -> JSONResponse:
+        logger.info("Health check requested")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
 
     for router in api_routers.get_routers():

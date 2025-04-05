@@ -1,16 +1,12 @@
-import logging
-
-import fastapi
 from api.base.endpoints import BaseEndpoint
 from core.exceptions import ObjectNotFound
-from db.session import get_session
+from db.session import DBSession
 from schemas.camunda_schema import ProcessKeyRequest
 from service import camunda
 from service.camunda.base import CamundaProcess
-from sqlmodel import Session
 
+from app.api.deps import DDLogger
 
-logger = logging.getLogger(__name__)
 
 ROUTE_PREFIX = "/api/process-starter"
 
@@ -23,7 +19,7 @@ class ProcessStarterEndpoint(BaseEndpoint):
 
         @self.router.post("")
         async def start_process(
-            request: ProcessKeyRequest, db: Session = fastapi.Depends(get_session)
+            request: ProcessKeyRequest, logger: DDLogger, db_session: DBSession
         ):
             """Start process"""
             logger.info(f"Starting process with key: {request.process_key}")
@@ -31,5 +27,7 @@ class ProcessStarterEndpoint(BaseEndpoint):
             if not hasattr(camunda, request.process_key):
                 raise ObjectNotFound(f"Process {request.process_key} not found")
 
-            process: CamundaProcess = getattr(camunda, request.process_key)
+            process: CamundaProcess = getattr(camunda, request.process_key)(
+                db_session=db_session, logger=logger
+            )
             process.start_process()
