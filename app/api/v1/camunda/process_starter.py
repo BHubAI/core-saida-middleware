@@ -1,11 +1,10 @@
 from api.base.endpoints import BaseEndpoint
+from api.deps import DDLogger
 from core.exceptions import ObjectNotFound
 from db.session import DBSession
 from schemas.camunda_schema import ProcessKeyRequest
 from service import camunda
 from service.camunda.base import CamundaProcess
-
-from app.api.deps import DDLogger
 
 
 ROUTE_PREFIX = "/api/process-starter"

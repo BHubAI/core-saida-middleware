@@ -17,6 +17,12 @@ class Settings(BaseSettings):
     ENV: str = Field(default="dev")
     DEBUG: bool = Field(default=False)
 
+    # AWS settings
+    AWS_ENDPOINT_URL: str = Field(default="http://localhost:4566")
+    AWS_REGION: str = Field(default="us-east-1")
+    AWS_ACCESS_KEY_ID: str = Field(default="test")
+    AWS_SECRET_ACCESS_KEY: str = Field(default="test")
+
     # Camunda settings
     CAMUNDA_ENGINE_URL: str = Field(default="")
     CAMUNDA_USERNAME: str = Field(default="")

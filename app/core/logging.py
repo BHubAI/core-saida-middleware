@@ -1,8 +1,7 @@
 import logging
 
+from core.config import settings
 from datadog.dogstatsd.base import DogStatsd
-
-from app.core.config import settings
 
 
 # Initialize the Datadog statsd client

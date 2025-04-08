@@ -1,22 +1,45 @@
-import logging
+import asyncio
+from contextlib import asynccontextmanager
 
 from api import routes
+from api.deps import setup_logger
 from core.config import settings
 from core.exceptions import CoreSaidaOrchestratorException, ObjectNotFound
+from core.logging_config import configure_logging, get_logger
+from db.session import add_postgresql_extension
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
-from app.db.session import add_postgresql_extension
-
-
-aws_logger = logging.getLogger(__name__)
+from queues.subscribers.process_starter_subscriber import ProcessStarterSubscriber
 
 
-def on_startup() -> None:
-    add_postgresql_extension()
-    aws_logger.info("FastAPI app running...")
+# Configure logging
+configure_logging()
+logger = get_logger(__name__)
+ddlogger = setup_logger(__name__)
+subscriber = ProcessStarterSubscriber(queue_name="process_starter_queue")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup and shutdown events for the FastAPI application."""
+    # Startup
+    logger.info("Starting up...")
+    add_postgresql_extension()  # This is not async
+
+    # Start the subscriber in the background
+    logger.info("Starting SQS subscriber...")
+    # We need to keep a reference to the task to prevent it from being garbage collected
+    subscriber_task = asyncio.create_task(subscriber.start())
+    logger.info(f"SQS subscriber task created: {subscriber_task}")
+
+    yield
+
+    # Shutdown
+    logger.info("Shutting down...")
+    await subscriber.stop()
+    logger.info("SQS subscriber stopped")
 
 
 def create_service() -> FastAPI:
@@ -33,16 +56,21 @@ def create_service() -> FastAPI:
         version=settings.VERSION,
         openapi_url=f"/{settings.VERSION}/openapi.json",
         openapi_tags=tags_metadata,
+        lifespan=lifespan,
     )
     routes.register_routes(app)
 
-    app.add_middleware(CORSMiddleware, allow_origins=["*"])
-
-    app.add_event_handler("startup", on_startup)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
-        aws_logger.error(f"Validation error: {exc.errors()}")
+        logger.error(f"Validation error: {exc.errors()}")
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST, content={"detail": exc.errors()}
         )
@@ -50,7 +78,7 @@ def create_service() -> FastAPI:
     @app.exception_handler(ObjectNotFound)
     async def object_not_found_exception_handler(request: Request, exc: ObjectNotFound):
         error_msg = str(exc)
-        aws_logger.error(f"Object not found: {error_msg}")
+        logger.error(f"Object not found: {error_msg}")
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": error_msg})
 
     @app.exception_handler(CoreSaidaOrchestratorException)
@@ -58,7 +86,7 @@ def create_service() -> FastAPI:
         request: Request, exc: CoreSaidaOrchestratorException
     ):
         error_msg = str(exc)
-        aws_logger.error(f"Core Saida Orchestrator error: {error_msg}")
+        logger.error(f"Core Saida Orchestrator error: {error_msg}")
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": error_msg}
         )

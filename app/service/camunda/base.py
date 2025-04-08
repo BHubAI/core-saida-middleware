@@ -1,10 +1,9 @@
 import logging
 
 import requests
+from api.deps import DDLogger
 from core.config import settings
 from db.session import DBSession
-
-from app.api.deps import DDLogger
 
 
 logger = logging.getLogger(__name__)
