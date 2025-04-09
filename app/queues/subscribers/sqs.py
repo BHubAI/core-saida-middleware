@@ -1,32 +1,32 @@
 import asyncio
+import json
 from typing import Any, Dict, Optional
 
 import boto3
 from botocore.config import Config
 from core.config import settings
-from core.logging_config import get_logger
+from core.logging import setup_logger
 from db.session import get_session
-
-
-logger = get_logger(__name__)
+from models.camunda import ProcessEventLog, ProcessEventTypes
+from sqlalchemy.orm import Session
 
 
 class SQSSubscriber:
     """Subscriber for processing messages from SQS queue."""
 
     def __init__(self, queue_name: str):
+        self.logger = setup_logger(__name__)
         self.queue_name = queue_name
         self.sqs_client = self._get_sqs_client()
         self.queue_url = self._get_queue_url()
         self.running = False
         self.poll_interval = 5  # seconds
-        self.db_session = get_session()
-        self.logger = get_logger()
-        logger.info(f"Initialized SQS subscriber for queue: {queue_name}")
+        self.db_session = None
+        self.logger.info(f"Initialized SQS subscriber for queue: {queue_name}")
 
     def _get_sqs_client(self):
         """Get SQS client with LocalStack configuration."""
-        logger.debug("Creating SQS client with LocalStack configuration")
+        self.logger.debug("Creating SQS client with LocalStack configuration")
         endpoint_url = settings.AWS_ENDPOINT_URL
 
         return boto3.client(
@@ -46,34 +46,34 @@ class SQSSubscriber:
     def _get_queue_url(self) -> str:
         """Get queue URL from queue name."""
         try:
-            logger.debug(f"Getting queue URL for queue: {self.queue_name}")
+            self.logger.debug(f"Getting queue URL for queue: {self.queue_name}")
             response = self.sqs_client.get_queue_url(QueueName=self.queue_name)
             queue_url = response["QueueUrl"]
-            logger.debug(f"Queue URL: {queue_url}")
+            self.logger.debug(f"Queue URL: {queue_url}")
             return queue_url
         except Exception as e:
-            logger.error(f"Error getting queue URL: {str(e)}")
+            self.logger.error(f"Error getting queue URL: {str(e)}")
             raise
 
-    async def process_message(self, message: Dict[str, Any]) -> None:
+    async def process_message(self, message: Dict[str, Any], db_session: Session) -> None:
         """Not implemented"""
-        logger.info(f"Empty process_message method: {message}")
+        self.logger.info(f"Empty process_message method: {message}")
         pass
 
     async def delete_message(self, receipt_handle: str) -> None:
         """Delete a message from the queue after successful processing."""
         try:
-            logger.info(f"Deleting message with receipt handle: {receipt_handle}")
+            self.logger.info(f"Deleting message with receipt handle: {receipt_handle}")
             self.sqs_client.delete_message(QueueUrl=self.queue_url, ReceiptHandle=receipt_handle)
-            logger.info("Message deleted successfully")
+            self.logger.info("Message deleted successfully")
         except Exception as e:
-            logger.error(f"Error deleting message: {str(e)}")
+            self.logger.error(f"Error deleting message: {str(e)}")
             raise
 
     async def receive_messages(self) -> Optional[list]:
         """Receive messages from the queue."""
         try:
-            logger.info("Receiving messages from queue")
+            self.logger.info("Receiving messages from queue")
             # Use a shorter wait time to avoid long timeouts
             response = self.sqs_client.receive_message(
                 QueueUrl=self.queue_url,
@@ -84,10 +84,10 @@ class SQSSubscriber:
             )
             messages = response.get("Messages", [])
             if messages:
-                logger.info(f"Received {len(messages)} messages")
+                self.logger.info(f"Received {len(messages)} messages")
             return messages
         except Exception as e:
-            logger.error(f"Error receiving messages: {str(e)}")
+            self.logger.error(f"Error receiving messages: {str(e)}")
             # Add a small delay before retrying to avoid hammering the server
             await asyncio.sleep(2)
             return None
@@ -95,32 +95,44 @@ class SQSSubscriber:
     async def start(self) -> None:
         """Start the subscriber."""
         self.running = True
-        logger.info(f"Starting subscriber for queue: {self.queue_name}")
+        self.logger.info(f"Starting subscriber for queue: {self.queue_name}")
 
         while self.running:
             try:
                 messages = await self.receive_messages()
 
                 if not messages:
-                    logger.info(f"No messages received, sleeping for {self.poll_interval} seconds")
+                    self.logger.info(
+                        f"No messages received, sleeping for {self.poll_interval} seconds"
+                    )
                     await asyncio.sleep(self.poll_interval)
                     continue
 
                 for message in messages:
                     try:
-                        logger.info(f"Processing message: {message.get('MessageId')}")
-                        await self.process_message(message)
-                        await self.delete_message(message["ReceiptHandle"])
+                        self.logger.info(f"Processing message: {message.get('MessageId')}")
+                        for db_session in get_session():
+                            message_body = json.loads(message["Body"])
+                            db_session.add(
+                                ProcessEventLog(
+                                    process_key=message_body["process_key"],
+                                    event_type=ProcessEventTypes.START,
+                                    event_data=message_body,
+                                )
+                            )
+                            await self.process_message(message, db_session)
+                            db_session.commit()
+                            await self.delete_message(message["ReceiptHandle"])
                     except Exception as e:
-                        logger.error(f"Error handling message: {str(e)}")
+                        self.logger.error(f"Error handling message: {str(e)}")
                         # Continue processing other messages
                         continue
 
             except Exception as e:
-                logger.error(f"Error in message processing loop: {str(e)}")
+                self.logger.error(f"Error in message processing loop: {str(e)}")
                 await asyncio.sleep(self.poll_interval)
 
     async def stop(self) -> None:
         """Stop the subscriber."""
-        logger.info("Stopping subscriber...")
+        self.logger.info("Stopping subscriber...")
         self.running = False

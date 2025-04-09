@@ -1,6 +1,7 @@
 import logging
 
 from core.config import settings
+from core.logging_config import get_logger
 from datadog.dogstatsd.base import DogStatsd
 
 
@@ -38,7 +39,7 @@ def setup_logger(name: str) -> logging.Logger:
     Returns:
         logging.Logger: Configured logger instance
     """
-    logger = logging.getLogger(name)
+    logger = get_logger(name)
     logger.setLevel(settings.LOG_LEVEL)
 
     # Only add Datadog handler in non-dev environments

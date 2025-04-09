@@ -5,12 +5,13 @@ from typing import Optional
 from sqlalchemy import text
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.sql import expression
-from sqlmodel import Column, DateTime, Field, SQLModel
+from sqlalchemy.types import DateTime
+from sqlmodel import Column, Field, SQLModel
 
 
 # https://docs.sqlalchemy.org/en/20/core/compiler.html#utc-timestamp-function
 class utcnow(expression.FunctionElement):  # type: ignore
-    type = DateTime()
+    type = DateTime()  # type: ignore
     inherit_cache = True
 
 
@@ -25,24 +26,21 @@ class BaseModel(SQLModel):
         primary_key=True,
         index=True,
     )
+
+    created_at: Optional[datetime] = Field(
+        sa_column=Column(
+            DateTime(timezone=True),
+            server_default=utcnow(),
+            nullable=False,
+        ),
+        default_factory=datetime.utcnow,
+    )
+
+
+class UUIDModel(BaseModel):
     ref_id: Optional[uuid_pkg.UUID] = Field(
         default_factory=uuid_pkg.uuid4,
         index=True,
         nullable=False,
         sa_column_kwargs={"server_default": text("gen_random_uuid()"), "unique": True},
-    )
-    created_at: Optional[datetime] = Field(
-        sa_column=Column(
-            DateTime(timezone=True),
-            server_default=utcnow(),
-            nullable=True,
-        )
-    )
-    updated_at: Optional[datetime] = Field(
-        default_factory=datetime.utcnow,
-        sa_column=Column(
-            DateTime(timezone=True),
-            onupdate=utcnow(),
-            nullable=True,
-        ),
     )
