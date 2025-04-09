@@ -1,6 +1,9 @@
+import csv
 import json
+from io import StringIO
 from typing import Any, Dict
 
+from helpers import s3_utils
 from queues.subscribers.sqs import SQSSubscriber
 from service.camunda.base import start_process
 from sqlalchemy.orm import Session
@@ -15,10 +18,15 @@ class ProcessStarterSubscriber(SQSSubscriber):
             message: The message to process.
         """
         try:
-            message_body = json.loads(message["Body"])
-            self.logger.info(f"ProcessStarterSubscriber processing message: {message_body}")
+            process_key = json.loads(message["Body"])["process_key"]
+            process_data = s3_utils.get_object("fechamento-folha", "folha_pagamento.csv")
 
-            await start_process(message_body["process_key"], db_session, self.logger)
+            csv_file = StringIO(process_data)
+            csv_reader = csv.DictReader(csv_file)
+            for row in csv_reader:
+                # TODO REMOVE this hard coded
+                row["regime"] = "NATIONAL_SIMPLE"
+                await start_process(process_key, row, db_session, self.logger)
         except Exception as e:
             self.logger.error(f"Error in ProcessStarterSubscriber: {str(e)}")
             raise

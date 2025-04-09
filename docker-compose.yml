@@ -49,14 +49,13 @@ services:
     command: |
       bash -c "
       while !</dev/tcp/db/5432; do sleep 1; done;
-      PYTHONPATH=/app uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug"
+      uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug"
     depends_on:
       - db
       - localstack
     environment:
       - PYTHONUNBUFFERED=0
       - PYTHONPATH=/app
-      - AWS_ENDPOINT_URL=http://localstack:4566
     volumes:
       - base-data:/data
       - ./app/:/app

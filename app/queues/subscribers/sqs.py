@@ -1,5 +1,4 @@
 import asyncio
-import json
 from typing import Any, Dict, Optional
 
 import boto3
@@ -7,7 +6,6 @@ from botocore.config import Config
 from core.config import settings
 from core.logging import setup_logger
 from db.session import get_session
-from models.camunda import ProcessEventLog, ProcessEventTypes
 from sqlalchemy.orm import Session
 
 
@@ -112,14 +110,6 @@ class SQSSubscriber:
                     try:
                         self.logger.info(f"Processing message: {message.get('MessageId')}")
                         for db_session in get_session():
-                            message_body = json.loads(message["Body"])
-                            db_session.add(
-                                ProcessEventLog(
-                                    process_key=message_body["process_key"],
-                                    event_type=ProcessEventTypes.START,
-                                    event_data=message_body,
-                                )
-                            )
                             await self.process_message(message, db_session)
                             db_session.commit()
                             await self.delete_message(message["ReceiptHandle"])
