@@ -1,11 +1,11 @@
 import asyncio
-import json
 from typing import Any, Dict, Optional
 
 import boto3
 from botocore.config import Config
 from core.config import settings
 from core.logging_config import get_logger
+from db.session import get_session
 
 
 logger = get_logger(__name__)
@@ -20,18 +20,14 @@ class SQSSubscriber:
         self.queue_url = self._get_queue_url()
         self.running = False
         self.poll_interval = 5  # seconds
+        self.db_session = get_session()
+        self.logger = get_logger()
         logger.info(f"Initialized SQS subscriber for queue: {queue_name}")
 
     def _get_sqs_client(self):
         """Get SQS client with LocalStack configuration."""
         logger.debug("Creating SQS client with LocalStack configuration")
-        # Use the Docker service name instead of localhost
         endpoint_url = settings.AWS_ENDPOINT_URL
-        # if "localhost" in endpoint_url:
-        #     endpoint_url = endpoint_url.replace("localhost", "localstack")
-        #     logger.debug(f"Modified endpoint URL from localhost to localstack: {endpoint_url}")
-        # else:
-        #     logger.debug(f"Using endpoint URL: {endpoint_url}")
 
         return boto3.client(
             "sqs",
@@ -60,23 +56,9 @@ class SQSSubscriber:
             raise
 
     async def process_message(self, message: Dict[str, Any]) -> None:
-        """Process a single message from the queue.
-
-        Override this method to implement custom message processing logic.
-        """
-        try:
-            message_body = json.loads(message["Body"])
-            logger.info(f"Processing message: {message_body}")
-
-            # Add your message processing logic here
-            # For example:
-            # await start_process(message_body)
-
-        except json.JSONDecodeError:
-            logger.error(f"Invalid JSON in message body: {message['Body']}")
-        except Exception as e:
-            logger.error(f"Error processing message: {str(e)}")
-            raise
+        """Not implemented"""
+        logger.info(f"Empty process_message method: {message}")
+        pass
 
     async def delete_message(self, receipt_handle: str) -> None:
         """Delete a message from the queue after successful processing."""
@@ -107,7 +89,7 @@ class SQSSubscriber:
         except Exception as e:
             logger.error(f"Error receiving messages: {str(e)}")
             # Add a small delay before retrying to avoid hammering the server
-            await asyncio.sleep(1)
+            await asyncio.sleep(2)
             return None
 
     async def start(self) -> None:
@@ -120,7 +102,7 @@ class SQSSubscriber:
                 messages = await self.receive_messages()
 
                 if not messages:
-                    logger.info("No messages received, sleeping for 1 second")
+                    logger.info(f"No messages received, sleeping for {self.poll_interval} seconds")
                     await asyncio.sleep(self.poll_interval)
                     continue
 

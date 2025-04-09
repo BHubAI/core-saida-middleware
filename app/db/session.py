@@ -5,12 +5,16 @@ from fastapi import Depends
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import NullPool
 
 
 def get_engine() -> Engine:
     engine = create_engine(
         settings.POSTGRES_URL,
         echo=settings.DEBUG,
+        future=True,
+        pool_pre_ping=True,
+        poolclass=NullPool,
     )
     return engine
 

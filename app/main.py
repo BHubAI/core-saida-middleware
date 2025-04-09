@@ -2,7 +2,6 @@ import asyncio
 from contextlib import asynccontextmanager
 
 from api import routes
-from api.deps import setup_logger
 from core.config import settings
 from core.exceptions import CoreSaidaOrchestratorException, ObjectNotFound
 from core.logging_config import configure_logging, get_logger
@@ -17,45 +16,39 @@ from queues.subscribers.process_starter_subscriber import ProcessStarterSubscrib
 # Configure logging
 configure_logging()
 logger = get_logger(__name__)
-ddlogger = setup_logger(__name__)
-subscriber = ProcessStarterSubscriber(queue_name="process_starter_queue")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown events for the FastAPI application."""
-    # Startup
-    logger.info("Starting up...")
-    add_postgresql_extension()  # This is not async
 
-    # Start the subscriber in the background
+    logger.info("Starting up...")
+    add_postgresql_extension()
+
     logger.info("Starting SQS subscriber...")
-    # We need to keep a reference to the task to prevent it from being garbage collected
-    subscriber_task = asyncio.create_task(subscriber.start())
-    logger.info(f"SQS subscriber task created: {subscriber_task}")
+    try:
+        subscriber = ProcessStarterSubscriber(queue_name="process_starter_queue.fifo")
+        # We need to keep a reference to the task to prevent it from being garbage collected
+        subscriber_task = asyncio.create_task(subscriber.start())
+        logger.info(f"SQS subscriber task created: {subscriber_task}")
+    except Exception as e:
+        logger.error(f"Error creating SQS subscriber task: {e}")
+        subscriber = None
 
     yield
 
-    # Shutdown
     logger.info("Shutting down...")
-    await subscriber.stop()
-    logger.info("SQS subscriber stopped")
+    if subscriber:
+        await subscriber.stop()
+        logger.info("SQS subscriber stopped")
 
 
 def create_service() -> FastAPI:
-    tags_metadata = [
-        {
-            "name": "health",
-            "description": "Health check for api",
-        }
-    ]
-
     app = FastAPI(
         title="core-saida-orchestrator",
         description="Cire Saida Orchestrator",
         version=settings.VERSION,
         openapi_url=f"/{settings.VERSION}/openapi.json",
-        openapi_tags=tags_metadata,
         lifespan=lifespan,
     )
     routes.register_routes(app)

@@ -19,7 +19,7 @@ class SideEffectEndpoint(BaseEndpoint):
     """Side effect endpoint"""
 
     def __init__(self):
-        super().__init__(tags=["side_effect"], prefix=ROUTE_PREFIX)
+        super().__init__(tags=["Side Effect"], prefix=ROUTE_PREFIX)
 
         @self.router.post(LOG_EVENT_ROUTE)
         async def log_event(event: Event | None = None, db: Session = Depends(get_session)):

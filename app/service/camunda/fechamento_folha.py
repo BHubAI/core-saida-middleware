@@ -27,14 +27,38 @@ class FechamentoFolha3Process(CamundaProcess):
                 ),
                 "type": "json",
             },
-            "deadline": {"value": "2025-03-25", "type": "string"},
-            "competencia": {"value": "2025-03", "type": "string"},
-            "regime_tributario": {"value": "SIMPLES_NACIONAL", "type": "string"},
-            "cliente_possui_movimento_folha": {"value": "Com Movimento", "type": "string"},
-            "data_fechamento_folha": {"value": "2025-03-25", "type": "string"},
-            "cliente_elegibilidade": {"value": "valido", "type": "string"},
-            "assignee": {"value": "rafael.nunes@bhub.ai", "type": "string"},
-            "tem_movimento_folha": {"value": True, "type": "boolean"},
+            "deadline": {
+                "value": "2025-03-25",
+                "type": "string",
+            },
+            "competencia": {
+                "value": "2025-03",
+                "type": "string",
+            },
+            "regime_tributario": {
+                "value": "SIMPLES_NACIONAL",
+                "type": "string",
+            },
+            "cliente_possui_movimento_folha": {
+                "value": "Com Movimento",
+                "type": "string",
+            },
+            "data_fechamento_folha": {
+                "value": "2025-03-25",
+                "type": "string",
+            },
+            "cliente_elegibilidade": {
+                "value": "valido",
+                "type": "string",
+            },
+            "assignee": {
+                "value": "rafael.nunes@bhub.ai",
+                "type": "string",
+            },
+            "tem_movimento_folha": {
+                "value": True,
+                "type": "boolean",
+            },
         }
 
 

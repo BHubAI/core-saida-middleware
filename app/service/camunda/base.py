@@ -3,7 +3,9 @@ import logging
 import requests
 from api.deps import DDLogger
 from core.config import settings
+from core.exceptions import ObjectNotFound
 from db.session import DBSession
+from service import camunda
 
 
 logger = logging.getLogger(__name__)
@@ -50,10 +52,10 @@ class CamundaProcess:
             "Content-Type": "application/json",
         }
         variables = self.get_process_variables()
-        variables["business_key"] = self.get_business_key()
 
         payload = {
             "variables": variables,
+            "businessKey": self.get_business_key(),
         }
 
         response = requests.post(
@@ -70,3 +72,14 @@ class CamundaProcess:
         """Get process variables"""
         logger.info(f"Empty process variables for {self.process_key}")
         return {}
+
+
+async def start_process(process_key: str, db_session: DBSession, logger: DDLogger):
+    """Start process"""
+    logger.info(f"Starting process with key: {process_key}")
+
+    if not hasattr(camunda, process_key):
+        raise ObjectNotFound(f"Process {process_key} not found")
+
+    process: CamundaProcess = getattr(camunda, process_key)(db_session=db_session, logger=logger)
+    process.start_process()

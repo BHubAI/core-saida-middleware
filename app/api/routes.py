@@ -1,6 +1,6 @@
 from api.base.endpoints import BaseEndpoint
 from api.deps import DDLogger
-from api.v1.camunda.process_starter import ProcessStarterEndpoint
+from api.v1.camunda.process_starter import ProcessMessageEndpoint
 from api.v1.camunda.side_effect import SideEffectEndpoint
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse, PlainTextResponse
@@ -8,7 +8,10 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 
 class Routers:
     def __init__(self):
-        self.endpoints: list[BaseEndpoint] = [SideEffectEndpoint(), ProcessStarterEndpoint()]
+        self.endpoints: list[BaseEndpoint] = [
+            SideEffectEndpoint(),
+            ProcessMessageEndpoint(),
+        ]
 
     def get_routers(self):
         for endpoint in self.endpoints:

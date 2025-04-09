@@ -3,6 +3,7 @@ from typing import Any, Dict
 
 from core.logging_config import get_logger
 from queues.subscribers.sqs import SQSSubscriber
+from service.camunda.base import start_process
 
 
 logger = get_logger(__name__)
@@ -13,22 +14,14 @@ class ProcessStarterSubscriber(SQSSubscriber):
 
     async def process_message(self, message: Dict[str, Any]) -> None:
         """Process a message from the queue.
-
-        This method should be customized according to your business logic.
+        Args:
+            message: The message to process.
         """
         try:
             message_body = json.loads(message["Body"])
             logger.info(f"ProcessStarterSubscriber processing message: {message_body}")
-
-            # Add your custom processing logic here
-            # For example:
-            # 1. Extract data from message
-            # 2. Validate the data
-            # 3. Start a process based on the data
-            # 4. Update the database
-            # 5. Send notifications
-
-            logger.info("ProcessStarterSubscriber processing completed successfully")
+            # TODO: Should open session with database here and close after message is processed
+            await start_process(message_body["process_key"], self.db_session, self.logger)
         except Exception as e:
             logger.error(f"Error in ProcessStarterSubscriber: {str(e)}")
             raise

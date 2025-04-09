@@ -14,7 +14,7 @@ def cli():
 @click.argument("queue_name")
 @click.option("--region", "-r", default="us-east-2", help="AWS region")
 @click.option("--endpoint", "-e", default="http://localhost:4566", help="LocalStack endpoint URL")
-@click.option("--fifo", "-f", is_flag=True, help="Create a FIFO queue")
+@click.option("--fifo", "-f", is_flag=False, help="Create a FIFO queue")
 @click.option(
     "--content-based-dedup",
     "-c",
@@ -36,14 +36,13 @@ def create_queue(queue_name, region, endpoint, fifo, content_based_dedup):
         # Prepare queue attributes
         attributes = {}
         if fifo:
-            pass
-            # if not queue_name.endswith(".fifo"):
-            #     queue_name = f"{queue_name}.fifo"
-            # attributes["FifoQueue"] = "true"
-            # if content_based_dedup:
-            #     attributes["ContentBasedDeduplication"] = "true"
-            # else:
-            #     attributes["ContentBasedDeduplication"] = "false"
+            if not queue_name.endswith(".fifo"):
+                queue_name = f"{queue_name}.fifo"
+            attributes["FifoQueue"] = "true"
+            if content_based_dedup:
+                attributes["ContentBasedDeduplication"] = "true"
+            else:
+                attributes["ContentBasedDeduplication"] = "false"
 
         # Create the queue
         response = sqs.create_queue(QueueName=queue_name, Attributes=attributes)

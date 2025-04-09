@@ -17,9 +17,9 @@ class Settings(BaseSettings):
     ENV: str = Field(default="dev")
     DEBUG: bool = Field(default=False)
 
-    # AWS settings
-    AWS_ENDPOINT_URL: str = Field(default="http://localhost:4566")
-    AWS_REGION: str = Field(default="us-east-1")
+    # AWS settings(localstack values by default)
+    AWS_ENDPOINT_URL: str = Field(default="http://localstack:4566")
+    AWS_REGION: str = Field(default="us-east-2")
     AWS_ACCESS_KEY_ID: str = Field(default="test")
     AWS_SECRET_ACCESS_KEY: str = Field(default="test")
 
@@ -69,7 +69,7 @@ class Settings(BaseSettings):
             return v
 
         return PostgresDsn.build(
-            scheme="postgresql+psycopg",
+            scheme="postgresql+psycopg2",
             username=values.data.get("POSTGRES_USER"),
             password=values.data.get("POSTGRES_PASSWORD"),
             host=values.data.get("POSTGRES_HOST"),

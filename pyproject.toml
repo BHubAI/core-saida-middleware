@@ -35,6 +35,9 @@ ruff = "^0.6.4"
 sqlalchemy-stubs = "0.4"
 pre-commit = "^3.6.2"
 adr-tools-python = "1.0.3"
+awscli-local = "*"
+
+
 
 [tool.isort]
 multi_line_output = 3

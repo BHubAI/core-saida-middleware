@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 import json
-import os
 import sys
+import uuid
 from typing import Optional
 
 import boto3
@@ -13,10 +13,10 @@ def get_sqs_client():
     """Get SQS client with LocalStack configuration."""
     return boto3.client(
         "sqs",
-        endpoint_url=os.getenv("AWS_ENDPOINT_URL", "http://localhost:4566"),
-        region_name=os.getenv("AWS_REGION", "us-east-1"),
-        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID", "test"),
-        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY", "test"),
+        endpoint_url="http://localhost:4566",
+        region_name="us-east-2",
+        aws_access_key_id="test",
+        aws_secret_access_key="test",
         config=Config(
             retries={"max_attempts": 3},
             connect_timeout=5,
@@ -33,11 +33,13 @@ def send_message(queue_name: str, message: str) -> Optional[str]:
         queue_url = sqs.get_queue_url(QueueName=queue_name)["QueueUrl"]
 
         # Send message
+        message_id = str(uuid.uuid4())
         response = sqs.send_message(
             QueueUrl=queue_url,
             MessageBody=message,
+            MessageGroupId=message_id,
+            MessageDeduplicationId=message_id,
         )
-
         print(f"Message sent successfully! MessageId: {response['MessageId']}")
         return response["MessageId"]
 
