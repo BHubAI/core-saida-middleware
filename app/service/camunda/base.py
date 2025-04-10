@@ -47,6 +47,9 @@ class CamundaProcessStarter:
         # TODO: Implement this to get a real business key
         return self.process_key
 
+    def audit_event(self):
+        pass
+
     def start_dev_process(self):
         """Start a process in Camunda dev environment"""
         self.logger.info(f"Starting process {self.process_key} in Camunda DEV")
