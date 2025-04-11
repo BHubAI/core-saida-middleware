@@ -45,6 +45,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                         "operational_status": {
                             "hr_pay_day": 5,
                             "accounting_dominio_code": "1234567890",
+                            "hr_pay_move_type": "HAS_MOVE",
                         },
                         "customer_profile": self.process_data["customer_profile"],
                         "company_tax_type": RegimeTributario.get_by_name(
@@ -55,6 +56,10 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                     }
                 ),
                 "type": "json",
+            },
+            "regime_tributario": {
+                "value": RegimeTributario.get_by_name(self.process_data["regime"]),
+                "type": "string",
             },
             "deadline": {
                 "value": "2025-03-25",
@@ -83,6 +88,10 @@ class FechamentoFolha3Process(CamundaProcessStarter):
             "tem_movimento_folha": {
                 "value": True,
                 "type": "boolean",
+            },
+            "tem_contribuicao": {
+                "value": "yes",
+                "type": "string",
             },
         }
 
