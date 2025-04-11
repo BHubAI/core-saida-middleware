@@ -19,7 +19,7 @@ class ProcessStarterSubscriber(SQSSubscriber):
         """
         try:
             process_key = json.loads(message["Body"])["process_key"]
-            process_data = s3_utils.get_object("fechamento-folha", "folha_pagamento.csv")
+            process_data = s3_utils.get_object("fechamento-folha", "folha.csv")
 
             csv_file = StringIO(process_data)
             csv_reader = csv.DictReader(csv_file)
