@@ -44,6 +44,8 @@ def create_queue(queue_name, region, endpoint, fifo, content_based_dedup):
             else:
                 attributes["ContentBasedDeduplication"] = "false"
 
+        attributes["VisibilityTimeout"] = str(60 * 15)
+
         # Create the queue
         response = sqs.create_queue(QueueName=queue_name, Attributes=attributes)
         queue_url = response["QueueUrl"]

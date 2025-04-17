@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
 
     logger.info("Starting SQS subscriber...")
     try:
-        subscriber = ProcessStarterSubscriber(queue_name="process_starter_queue.fifo")
+        subscriber = ProcessStarterSubscriber(queue_name="process_starter.fifo")
         # We need to keep a reference to the task to prevent it from being garbage collected
         subscriber_task = asyncio.create_task(subscriber.start())
         logger.info(f"SQS subscriber task created: {subscriber_task}")

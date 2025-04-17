@@ -143,7 +143,7 @@ def main():
     delete_parser = subparsers.add_parser("delete-bucket", help="Delete an S3 bucket")
     delete_parser.add_argument("bucket_name", help="Name of the bucket to delete")
 
-    # Put object command
+    # Put object comma
     put_parser = subparsers.add_parser("put-object", help="Put an object in an S3 bucket")
     put_parser.add_argument("bucket_name", help="Name of the bucket")
     put_parser.add_argument("object_key", help="Key of the object")

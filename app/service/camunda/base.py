@@ -4,17 +4,15 @@ import requests
 from core.config import settings
 from core.exceptions import ObjectNotFound
 from db.session import DBSession
+from models.camunda import ProcessEventLog, ProcessEventTypes
 from service import camunda
 
 
 class CamundaProcessStarter:
     """Base class for Camunda processes"""
 
-    def __init__(
-        self, process_key: str, process_data: dict, db_session: DBSession, logger: logging.Logger
-    ):
+    def __init__(self, process_key: str, db_session: DBSession, logger: logging.Logger):
         self.process_key = process_key
-        self.process_data = process_data
         self.db_session = db_session
         self.logger = logger
 
@@ -22,23 +20,45 @@ class CamundaProcessStarter:
         """Check if current customer is eligible to start this process"""
         return True
 
+    def get_process_content(self):
+        """Get the process content"""
+        raise NotImplementedError("This method should be implemented to return the process content")
+
     def start_process(self):
         current_env = settings.ENV
 
-        if not self.is_eligible():
+        process_content = self.get_process_content()
+        for customer_data in process_content:
             self.logger.info(
-                f"Customer {self.process_data['customer_id']} is not eligible to start process {self.process_key}"
+                f"Starting process {self.process_key} for customer {customer_data['cnpj']}"
             )
-            return
+            try:
+                if not self.is_eligible(customer_data):
+                    self.logger.info(
+                        f"Customer {customer_data['cnpj']} is not eligible to start process {self.process_key}"
+                    )
+                    continue
 
-        if current_env == "prod":
-            self.logger.info(f"Starting process {self.process_key} in PRODUCTION")
-            self.start_production_process()
-        else:
-            self.logger.info(f"Starting process {self.process_key} in {current_env}")
-            self.start_dev_process()
+                if current_env == "prod":
+                    self.logger.info(f"Starting process {self.process_key} in PRODUCTION")
+                    self.start_production_process(customer_data)
+                else:
+                    self.logger.info(f"Starting process {self.process_key} in {current_env}")
+                    self.start_dev_process(customer_data)
+            except Exception as e:
+                self.logger.error(
+                    f"Error starting process {self.process_key} for customer {customer_data['cnpj']}: {e}"
+                )
+                self.db_session.rollback()
+                self.db_session.add(
+                    ProcessEventLog(
+                        process_key=self.process_key,
+                        event_type=ProcessEventTypes.START_ERROR,
+                        event_data=customer_data,
+                    )
+                )
 
-    def start_production_process(self):
+    def start_production_process(self, customer_data: dict):
         """Start a process in production"""
         self.logger.info(f"Starting process {self.process_key} in PRODUCTION")
 
@@ -47,19 +67,21 @@ class CamundaProcessStarter:
         # TODO: Implement this to get a real business key
         return self.process_key
 
-    def start_dev_process(self):
+    def start_dev_process(self, customer_data: dict):
         """Start a process in Camunda dev environment"""
         self.logger.info(f"Starting process {self.process_key} in Camunda DEV")
         url = f"{settings.CAMUNDA_ENGINE_URL}/process-definition/key/{self.process_key}/start"
         headers = {
             "Content-Type": "application/json",
         }
-        variables = self.get_process_variables()
+        variables = self.get_process_variables(customer_data)
 
         payload = {
             "variables": variables,
             "businessKey": self.get_business_key(),
         }
+
+        self.audit_event(customer_data)
 
         response = requests.post(
             url,
@@ -70,25 +92,24 @@ class CamundaProcessStarter:
 
         response.raise_for_status()
 
-        self.audit_event()
         self.logger.info(f"Process {self.process_key} started in Camunda DEV")
 
-    def get_process_variables(self):
+    def get_process_variables(self, data: dict):
         """Get process variables"""
         self.logger.info(f"Empty process variables for {self.process_key}")
         return {}
 
 
-async def start_process(
-    process_key: str, data: dict, db_session: DBSession, logger: logging.Logger
-):
+async def start_process(process_key: str, db_session: DBSession, logger: logging.Logger):
     """Start process"""
     logger.info(f"Starting process with key: {process_key}")
+    try:
+        if not hasattr(camunda, process_key):
+            raise ObjectNotFound(f"Process {process_key} not found")
 
-    if not hasattr(camunda, process_key):
-        raise ObjectNotFound(f"Process {process_key} not found")
-
-    process: CamundaProcessStarter = getattr(camunda, process_key)(
-        process_data=data, db_session=db_session, logger=logger
-    )
-    process.start_process()
+        process: CamundaProcessStarter = getattr(camunda, process_key)(
+            db_session=db_session, logger=logger
+        )
+        process.start_process()
+    except Exception as e:
+        logger.error(f"Error starting process {process_key}: {e}")

@@ -7,6 +7,7 @@ from sqlmodel import JSON, Column, Field
 class ProcessEventTypes(str, Enum):
     START = "start"
     END = "end"
+    START_ERROR = "start_error"
 
 
 class ProcessEventLog(BaseModel, table=True):
