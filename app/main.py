@@ -42,7 +42,8 @@ async def lifespan(app: FastAPI):
             await asyncio.sleep(3)
             attempts += 1
             if attempts > 10:
-                raise e
+                logger.error("Failed to create SQS subscriber task after 10 attempts")
+                break
 
     yield
 
