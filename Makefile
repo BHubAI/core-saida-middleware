@@ -69,9 +69,9 @@ build-ecr:
 
 push-ecr:
 	@echo "pushing to ECR...."
-	aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.us-east-2.amazonaws.com
-	docker tag core-saida/orchestrator:latest $(AWS_ACCOUNT_ID).dkr.ecr.us-east-2.amazonaws.com/core-saida/orchestrator:latest
-	docker push $(AWS_ACCOUNT_ID).dkr.ecr.us-east-2.amazonaws.com/core-saida/orchestrator:latest
+	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.us-east-1.amazonaws.com
+	docker tag core-saida/orchestrator:latest $(AWS_ACCOUNT_ID).dkr.ecr.us-east-1.amazonaws.com/core-saida/orchestrator:latest
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.us-east-1.amazonaws.com/core-saida/orchestrator:latest
 
 # Local container commands
 run-local:
@@ -86,3 +86,8 @@ stop-local:
 	@echo "stopping local container...."
 	docker stop core-saida-orchestrator
 	docker rm core-saida-orchestrator
+
+
+bash:
+	@echo "connecting to container...."
+	docker compose exec $(BACKEND_CONTAINER_NAME) bash

@@ -26,19 +26,28 @@ async def lifespan(app: FastAPI):
     add_postgresql_extension()
 
     logger.info("Starting SQS subscriber...")
-    try:
-        subscriber = ProcessStarterSubscriber(queue_name="process_starter.fifo")
-        # We need to keep a reference to the task to prevent it from being garbage collected
-        subscriber_task = asyncio.create_task(subscriber.start())
-        logger.info(f"SQS subscriber task created: {subscriber_task}")
-    except Exception as e:
-        logger.error(f"Error creating SQS subscriber task: {e}")
-        subscriber = None
+    subscribers = []
+    attempts = 0
+    while True:
+        try:
+            pstart_subscriber = ProcessStarterSubscriber(queue_name="process_starter.fifo")
+
+            # We need to keep a reference to the task to prevent it from being garbage collected
+            pstart_subscriber_task = asyncio.create_task(pstart_subscriber.start())  # noqa F841: Assigned not used
+            logger.info(f"SQS subscriber task created: {pstart_subscriber}")
+            subscribers.append(pstart_subscriber)
+            break
+        except Exception as e:
+            logger.error(f"Error creating SQS subscriber task: {e}")
+            await asyncio.sleep(3)
+            attempts += 1
+            if attempts > 10:
+                raise e
 
     yield
 
     logger.info("Shutting down...")
-    if subscriber:
+    for subscriber in subscribers:
         await subscriber.stop()
         logger.info("SQS subscriber stopped")
 
@@ -64,9 +73,7 @@ def create_service() -> FastAPI:
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
         logger.error(f"Validation error: {exc.errors()}")
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST, content={"detail": exc.errors()}
-        )
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"detail": exc.errors()})
 
     @app.exception_handler(ObjectNotFound)
     async def object_not_found_exception_handler(request: Request, exc: ObjectNotFound):
@@ -75,14 +82,10 @@ def create_service() -> FastAPI:
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": error_msg})
 
     @app.exception_handler(CoreSaidaOrchestratorException)
-    async def core_saida_orchestrator_exception_handler(
-        request: Request, exc: CoreSaidaOrchestratorException
-    ):
+    async def core_saida_orchestrator_exception_handler(request: Request, exc: CoreSaidaOrchestratorException):
         error_msg = str(exc)
         logger.error(f"Core Saida Orchestrator error: {error_msg}")
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": error_msg}
-        )
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": error_msg})
 
     return app
 

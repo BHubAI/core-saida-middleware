@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 # Get environment variables
 ENDPOINT_URL = os.getenv("AWS_ENDPOINT_URL", "http://localhost:4566")
-REGION = os.getenv("AWS_DEFAULT_REGION", "us-east-2")
+REGION = os.getenv("AWS_DEFAULT_REGION", "us-east-1")
 
 # Initialize S3 client
 s3_client = boto3.client(
@@ -28,9 +28,7 @@ s3_client = boto3.client(
 def create_bucket(bucket_name: str) -> bool:
     """Create a new S3 bucket."""
     try:
-        s3_client.create_bucket(
-            Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": REGION}
-        )
+        s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": REGION})
         logger.info(f"Bucket '{bucket_name}' created successfully")
         return True
     except Exception as e:
@@ -151,9 +149,7 @@ def main():
     put_parser.add_argument("--content", help="Content to upload as a string")
 
     # Remove object command
-    remove_parser = subparsers.add_parser(
-        "remove-object", help="Remove an object from an S3 bucket"
-    )
+    remove_parser = subparsers.add_parser("remove-object", help="Remove an object from an S3 bucket")
     remove_parser.add_argument("bucket_name", help="Name of the bucket")
     remove_parser.add_argument("object_key", help="Key of the object to remove")
 

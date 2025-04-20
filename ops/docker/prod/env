@@ -23,7 +23,7 @@ CAMUNDA_USERNAME='<get from secret>'
 CAMUNDA_PASSWORD='<get from secret>'
 
 # AWS
-AWS_REGION=us-east-2
+AWS_REGION=us-east-1
 AWS_ACCOUNT_ID=<aws account id>
 AWS_ACCESS_KEY_ID=<aws access key>
 AWS_SECRET_ACCESS_KEY='<aws secret key>'
