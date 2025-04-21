@@ -23,11 +23,6 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown events for the FastAPI application."""
 
     logger.info("Starting up...")
-    logger.info(f"DATABASE URL: {settings.postgres_url}")
-    logger.info(
-        f"DATABASE PARAMS: {settings.POSTGRES_USER} | {settings.POSTGRES_PASSWORD} | {settings.POSTGRES_HOST} | {settings.POSTGRES_PORT} | {settings.POSTGRES_DB}"  # noqa: E501
-    )
-
     add_postgresql_extension()
 
     logger.info("Starting SQS subscriber...")

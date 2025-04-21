@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     POSTGRES_USER: str = Field(default="")
     POSTGRES_PASSWORD: str = Field(default="")
     POSTGRES_HOST: str = Field(default="")
-    POSTGRES_PORT: str = Field(default="")
+    POSTGRES_PORT: str = Field(default="5432")
     POSTGRES_DB: str = Field(default="")
 
     # Pool settings
@@ -76,7 +76,9 @@ class Settings(BaseSettings):
 
     @property
     def postgres_url(self) -> str:
-        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        return (
+            f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:5432/{self.POSTGRES_DB}"
+        )
 
 
 settings = Settings()
