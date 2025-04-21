@@ -21,7 +21,7 @@ jobs:
   deploy:
     name: Deploy to AWS ECS
     runs-on: ubuntu-latest
-    environment: aws
+    environment: production
 
     steps:
       - name: Checkout
@@ -30,7 +30,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::343218213121:role/OrganizationAccountAccessRole
+          role-to-assume: arn:aws:iam::343218213121:role/GitHubActionsECSDeployRole
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
