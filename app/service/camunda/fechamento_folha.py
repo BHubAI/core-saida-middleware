@@ -50,7 +50,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "value": json.dumps(
                     {
                         "trading_name": customer_data["company"],
-                        "ID": customer_data["id"],
+                        "ID": customer_data["ID"],
                         "cnpj": customer_data["cnpj"],
                         "origem": customer_data["origin_cnpj"],
                         "customer_profile": customer_data["customer_profile"],
@@ -59,6 +59,10 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                     }
                 ),
                 "type": "json",
+            },
+            "regime_tributario": {
+                "value": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
+                "type": "string",
             },
             "deadline": {
                 "value": "2025-03-25",
