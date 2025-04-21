@@ -23,6 +23,7 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown events for the FastAPI application."""
 
     logger.info("Starting up...")
+    logger.info(f"ADDR ENDPOINT: {settings.AWS_ENDPOINT_URL}")
     add_postgresql_extension()
 
     logger.info("Starting SQS subscriber...")
