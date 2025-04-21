@@ -1,21 +1,27 @@
+from functools import lru_cache
 from typing import Optional
 
 import boto3
 from core.config import settings
 
 
-# Get environment variables
-ENDPOINT_URL = settings.AWS_ENDPOINT_URL
-REGION = settings.AWS_REGION
+@lru_cache(maxsize=1)
+def get_s3_client():
+    """
+    Get an S3 client.
 
-# Initialize S3 client
-s3_client = boto3.client(
-    "s3",
-    endpoint_url=ENDPOINT_URL,
-    region_name=REGION,
-    aws_access_key_id="test",
-    aws_secret_access_key="test",
-)
+    Returns:
+        boto3.client: S3 client
+    """
+
+    params = {
+        "region_name": settings.AWS_REGION,
+    }
+
+    if settings.AWS_ENDPOINT_URL:
+        params["ENDPOINT"] = settings.AWS_ENDPOINT_URL
+
+    return boto3.client("s3", **params)
 
 
 def get_object(bucket_name: str, object_key: str) -> Optional[str]:
@@ -30,7 +36,7 @@ def get_object(bucket_name: str, object_key: str) -> Optional[str]:
         Optional[str]: Content of the object if successful, None otherwise
     """
     try:
-        response = s3_client.get_object(Bucket=bucket_name, Key=object_key)
+        response = get_s3_client().get_object(Bucket=bucket_name, Key=object_key)
         content = response["Body"].read().decode("utf-8")
         return content
     except Exception:
