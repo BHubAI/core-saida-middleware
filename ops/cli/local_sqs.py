@@ -12,7 +12,7 @@ def cli():
 
 @cli.command()
 @click.argument("queue_name")
-@click.option("--region", "-r", default="us-east-2", help="AWS region")
+@click.option("--region", "-r", default="us-east-1", help="AWS region")
 @click.option("--endpoint", "-e", default="http://localhost:4566", help="LocalStack endpoint URL")
 @click.option("--fifo", "-f", is_flag=True, help="Create a FIFO queue")
 @click.option(
@@ -44,6 +44,8 @@ def create_queue(queue_name, region, endpoint, fifo, content_based_dedup):
             else:
                 attributes["ContentBasedDeduplication"] = "false"
 
+        attributes["VisibilityTimeout"] = str(60 * 15)
+
         # Create the queue
         response = sqs.create_queue(QueueName=queue_name, Attributes=attributes)
         queue_url = response["QueueUrl"]
@@ -52,9 +54,7 @@ def create_queue(queue_name, region, endpoint, fifo, content_based_dedup):
         click.echo(f"Queue URL: {queue_url}")
         if fifo:
             click.echo("Queue type: FIFO")
-            click.echo(
-                f"Content-based deduplication: {'enabled' if content_based_dedup else 'disabled'}"
-            )
+            click.echo(f"Content-based deduplication: {'enabled' if content_based_dedup else 'disabled'}")
 
     except ClientError as e:
         click.echo(f"Error creating queue: {e}", err=True)
@@ -64,7 +64,7 @@ def create_queue(queue_name, region, endpoint, fifo, content_based_dedup):
 
 
 @cli.command()
-@click.option("--region", "-r", default="us-east-2", help="AWS region")
+@click.option("--region", "-r", default="us-east-1", help="AWS region")
 @click.option("--endpoint", "-e", default="http://localhost:4566", help="LocalStack endpoint URL")
 def list_queues(region, endpoint):
     """List all SQS queues on LocalStack"""
@@ -99,7 +99,7 @@ def list_queues(region, endpoint):
 
 @cli.command()
 @click.argument("queue_name")
-@click.option("--region", "-r", default="us-east-2", help="AWS region")
+@click.option("--region", "-r", default="us-east-1", help="AWS region")
 @click.option("--endpoint", "-e", default="http://localhost:4566", help="LocalStack endpoint URL")
 def delete_queue(queue_name, region, endpoint):
     """Delete an SQS queue on LocalStack"""

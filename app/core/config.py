@@ -18,10 +18,10 @@ class Settings(BaseSettings):
     DEBUG: bool = Field(default=False)
 
     # AWS settings(localstack values by default)
-    AWS_ENDPOINT_URL: str = Field(default="http://localstack:4566")
-    AWS_REGION: str = Field(default="us-east-2")
-    AWS_ACCESS_KEY_ID: str = Field(default="test")
-    AWS_SECRET_ACCESS_KEY: str = Field(default="test")
+    AWS_ENDPOINT_URL: str = Field(default="")
+    AWS_REGION: str = Field(default="us-east-1")
+    AWS_ACCESS_KEY_ID: str = Field(default="")
+    AWS_SECRET_ACCESS_KEY: str = Field(default="")
 
     # Camunda settings
     CAMUNDA_ENGINE_URL: str = Field(default="")
