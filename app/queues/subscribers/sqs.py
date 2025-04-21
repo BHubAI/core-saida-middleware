@@ -71,7 +71,7 @@ class SQSSubscriber:
     async def receive_messages(self) -> Optional[list]:
         """Receive messages from the queue."""
         try:
-            self.logger.info("Receiving messages from queue")
+            self.logger.debug("Receiving messages from queue")
             # Use a shorter wait time to avoid long timeouts
             response = self.sqs_client.receive_message(
                 QueueUrl=self.queue_url,
@@ -100,9 +100,7 @@ class SQSSubscriber:
                 messages = await self.receive_messages()
 
                 if not messages:
-                    self.logger.info(
-                        f"No messages received, sleeping for {self.poll_interval} seconds"
-                    )
+                    self.logger.debug(f"No messages received, sleeping for {self.poll_interval} seconds")
                     await asyncio.sleep(self.poll_interval)
                     continue
 

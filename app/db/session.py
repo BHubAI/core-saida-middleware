@@ -10,7 +10,7 @@ from sqlalchemy.pool import NullPool
 
 def get_engine() -> Engine:
     engine = create_engine(
-        settings.POSTGRES_URL,
+        settings.postgres_url,
         echo=settings.DEBUG,
         future=True,
         pool_pre_ping=True,

@@ -30,7 +30,7 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 # Set environment variables from env file
 ARG ENV_FILE
 COPY ${ENV_FILE} /app/.env
-RUN set -a && . /app/.env && set +a
+# RUN set -a && . /app/.env && set +a
 
 WORKDIR /app
 

@@ -34,7 +34,12 @@ services:
       - "./localstack:/var/lib/localstack"
       - "./localstack/startup.sh:/etc/localstack/init/ready.d/startup.sh"
     restart: always
-    command: ["/bin/bash", "-c", "chmod +x /etc/localstack/init/ready.d/startup.sh && localstack start"]
+    command:
+      [
+        "/bin/bash",
+        "-c",
+        "chmod +x /etc/localstack/init/ready.d/startup.sh && localstack start",
+      ]
 
   backend:
     container_name: core-backend
@@ -58,8 +63,8 @@ services:
     environment:
       - PYTHONUNBUFFERED=0
       - PYTHONPATH=/app
-      - POSTGRES_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - AWS_ENDPOINT_URL=http://localstack:4566
+      - POSTGRES_HOST=db
     tty: true
     stdin_open: true
     volumes:

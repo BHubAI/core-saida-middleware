@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 from pydantic import AnyHttpUrl, Field, PostgresDsn, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -46,7 +46,6 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str = Field(default="")
     POSTGRES_PORT: str = Field(default="")
     POSTGRES_DB: str = Field(default="")
-    POSTGRES_URL: Union[Optional[PostgresDsn], Optional[str]] = Field(default=None)
 
     # Pool settings
     DB_POOL_SIZE: int = Field(default=83)
@@ -62,7 +61,6 @@ class Settings(BaseSettings):
 
         return max(values.data.get("DB_POOL_SIZE") // values.data.get("WEB_CONCURRENCY"), 5)  # type: ignore
 
-    @field_validator("POSTGRES_URL", mode="before")
     @classmethod
     def build_db_connection(cls, v: Optional[str], values: ValidationInfo) -> Any:
         if isinstance(v, str) and len(v) > 0:
@@ -75,6 +73,10 @@ class Settings(BaseSettings):
             host=values.data.get("POSTGRES_HOST"),
             path=f"{values.data.get('POSTGRES_DB') or ''}",
         ).unicode_string()
+
+    @property
+    def postgres_url(self) -> str:
+        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
 
 settings = Settings()
