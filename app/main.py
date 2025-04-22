@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
             pstart_subscriber = ProcessStarterSubscriber(queue_name="process_starter.fifo")
 
             # We need to keep a reference to the task to prevent it from being garbage collected
-            pstart_subscriber_task = asyncio.create_task(pstart_subscriber.start())  # noqa F841: Assigned not used
+            # pstart_subscriber_task = asyncio.create_task(pstart_subscriber.start())  # noqa F841: Assigned not used
             logger.info(f"SQS subscriber task created: {pstart_subscriber}")
             subscribers.append(pstart_subscriber)
             break

@@ -19,7 +19,7 @@ def get_s3_client():
     }
 
     if settings.AWS_ENDPOINT_URL:
-        params["ENDPOINT"] = settings.AWS_ENDPOINT_URL
+        params["endpoint_url"] = settings.AWS_ENDPOINT_URL
 
     return boto3.client("s3", **params)
 
@@ -39,5 +39,6 @@ def get_object(bucket_name: str, object_key: str) -> Optional[str]:
         response = get_s3_client().get_object(Bucket=bucket_name, Key=object_key)
         content = response["Body"].read().decode("utf-8")
         return content
-    except Exception:
+    except Exception as e:
+        print(f"Error getting object from S3: {e}")
         return None
