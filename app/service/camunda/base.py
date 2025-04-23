@@ -32,9 +32,11 @@ class CamundaProcessStarter:
             self.logger.info(f"Starting process {self.process_key} for customer {customer_data['cnpj']}")
             try:
                 if not self.is_eligible(customer_data):
-                    self.logger.info(
+                    skip_message = (
                         f"Customer {customer_data['cnpj']} is not eligible to start process {self.process_key}"
                     )
+                    self.logger.info(skip_message)
+                    self.audit_event(customer_data["cnpj"], ProcessEventTypes.SKIPPED, {"message": skip_message})
                     continue
 
                 if current_env == "prod":
@@ -43,6 +45,8 @@ class CamundaProcessStarter:
                 else:
                     self.logger.info(f"Starting process {self.process_key} in {current_env}")
                     self.start_dev_process(customer_data)
+
+                self.db_session.commit()
             except Exception as e:
                 self.logger.error(
                     f"Error starting process {self.process_key} for customer {customer_data['cnpj']}: {e}"
@@ -70,7 +74,6 @@ class CamundaProcessStarter:
 
     def start_dev_process(self, customer_data: dict):
         """Start a process in Camunda dev environment"""
-        self.logger.info(f"Starting process {self.process_key} in Camunda DEV")
         url = f"{settings.CAMUNDA_ENGINE_URL}/process-definition/key/{self.process_key}/start"
         headers = {
             "Content-Type": "application/json",
@@ -82,8 +85,6 @@ class CamundaProcessStarter:
             "businessKey": self.get_business_key(),
         }
 
-        self.audit_event(customer_data)
-
         response = requests.post(
             url,
             headers=headers,
@@ -93,7 +94,11 @@ class CamundaProcessStarter:
 
         response.raise_for_status()
 
-        self.logger.info(f"Process {self.process_key} started in Camunda DEV")
+        process_id = response.json()["id"]
+
+        self.audit_event(process_id, ProcessEventTypes.START, payload)
+
+        self.logger.info(f"Process {self.process_key} started in Camunda DEV for customer {customer_data['cnpj']}")
 
     def get_process_variables(self, data: dict):
         """Get process variables"""

@@ -14,30 +14,43 @@ from service.camunda.enums import RegimeTributario
 class FechamentoFolha3Process(CamundaProcessStarter):
     def __init__(self, *args, **kwargs):
         super().__init__("fechamento_folha_dp_3", *args, **kwargs)
+        self.s3_file_path = "/dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
         return customer_data["Tipo de folha"] != "sem movimento"
 
-    def audit_event(self, customer_data: dict):
-        """Audit event"""
-        audit_data = {
-            "customer_id": customer_data["ID"],
-            "cnpj": customer_data["cnpj"],
-            "codigo_dominio": "1234567890",
-            "competencia": "03/2025",
+    def mes_ano_ptbr(self):
+        meses = {
+            1: "Janeiro",
+            2: "Fevereiro",
+            3: "Março",
+            4: "Abril",
+            5: "Maio",
+            6: "Junho",
+            7: "Julho",
+            8: "Agosto",
+            9: "Setembro",
+            10: "Outubro",
+            11: "Novembro",
+            12: "Dezembro",
         }
 
+        return f"{meses[datetime.datetime.now().month]}/{datetime.datetime.now().year}"
+
+    def audit_event(self, process_id: str, event_type: ProcessEventTypes, process_data: dict):
+        """Audit event"""
         self.db_session.add(
             ProcessEventLog(
-                process_key=self.process_key,
-                event_type=ProcessEventTypes.START,
-                event_data=audit_data,
+                process_id=process_id,
+                event_type=event_type,
+                event_data=process_data,
             )
         )
+        self.db_session.commit()
 
     def get_process_content(self):
         """Load process content from s3 object"""
-        process_data = s3_utils.get_object("core-saida", "/dp/fechamento-folha/folha-elegiveis.csv")
+        process_data = s3_utils.get_object("core-saida", self.s3_file_path)
 
         csv_file = StringIO(process_data)
         csv_reader = csv.DictReader(csv_file)
@@ -60,6 +73,10 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 ),
                 "type": "json",
             },
+            "customer_guid": {
+                "value": customer_data["ID"],
+                "type": "string",
+            },
             "regime_tributario": {
                 "value": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
                 "type": "string",
@@ -69,7 +86,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "competencia": {
-                "value": datetime.datetime.now().strftime("%m/%Y"),
+                "value": datetime.datetime.now().strftime("%Y-%m"),
                 "type": "string",
             },
             "cliente_possui_movimento_folha": {
@@ -98,6 +115,10 @@ class FechamentoFolha3Process(CamundaProcessStarter):
             },
             "envia_notificacao": {
                 "value": "no" if customer_data["customer_profile"] == "FAMILY_5" else "yes",
+                "type": "string",
+            },
+            "mes_ano": {
+                "value": self.mes_ano_ptbr(),
                 "type": "string",
             },
         }

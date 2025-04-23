@@ -15,7 +15,5 @@ class ProcessMessageEndpoint(BaseEndpoint):
         super().__init__(tags=["Process Message"], prefix=ROUTE_PREFIX)
 
         @self.router.post("/start")
-        async def start_camunda_process(
-            request: ProcessKeyRequest, logger: DDLogger, db_session: DBSession
-        ):
+        async def start_camunda_process(request: ProcessKeyRequest, logger: DDLogger, db_session: DBSession):
             await start_process(request.process_key, db_session, logger)
