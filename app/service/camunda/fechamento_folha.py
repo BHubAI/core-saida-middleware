@@ -5,6 +5,7 @@ import datetime
 import json
 from io import StringIO
 
+from core.config import settings
 from helpers import s3_utils
 from models.camunda import ProcessEventLog, ProcessEventTypes
 from service.camunda.base import CamundaProcessStarter
@@ -17,7 +18,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         self.s3_file_path = "/dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
-        return customer_data["Tipo de folha"] != "sem movimento"
+        return True
 
     def mes_ano_ptbr(self):
         meses = {
@@ -36,6 +37,11 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         }
 
         return f"{meses[datetime.datetime.now().month]}/{datetime.datetime.now().year}"
+
+    def get_upload_url(self):
+        if settings.ENV == "dev":
+            return "https://task-manager.cexp-dev.bhub.ai/upload-url"
+        return "https://task-manager.bhub.ai/upload-url"
 
     def audit_event(self, process_id: str, event_type: ProcessEventTypes, process_data: dict):
         """Audit event"""
@@ -119,6 +125,10 @@ class FechamentoFolha3Process(CamundaProcessStarter):
             },
             "mes_ano": {
                 "value": self.mes_ano_ptbr(),
+                "type": "string",
+            },
+            "upload_url": {
+                "value": self.get_upload_url(),
                 "type": "string",
             },
         }
