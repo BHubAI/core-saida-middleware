@@ -69,7 +69,7 @@ class CamundaProcessStarter:
         # TODO: Implement this to get a real business key
         return self.process_key
 
-    def audit_event(self, customer_data: dict):
+    def audit_event(self, process_id: str, event_type: ProcessEventTypes, process_data: dict):
         pass
 
     def start_dev_process(self, customer_data: dict):
