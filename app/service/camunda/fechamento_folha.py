@@ -75,6 +75,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                         "customer_profile": customer_data["customer_profile"],
                         "company_tax_type": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
                         "codigo_dominio": customer_data["COD Dominio"],
+                        "operational_status": {"hr_pay_day": "último dia do mês", "hr_pay_day_type": "NTH_WORK_DAY"},
                     }
                 ),
                 "type": "json",
@@ -87,10 +88,6 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "value": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
                 "type": "string",
             },
-            "deadline": {
-                "value": "2025-03-25",
-                "type": "string",
-            },
             "competencia": {
                 "value": datetime.datetime.now().strftime("%Y-%m"),
                 "type": "string",
@@ -99,16 +96,12 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "value": True if customer_data["Tipo de folha"] != "sem movimento" else False,
                 "type": "boolean",
             },
-            "data_fechamento_folha": {
-                "value": "2025-03-25",
-                "type": "string",
-            },
             "cliente_elegibilidade": {
                 "value": "valido" if self.is_eligible(customer_data) else "invalido",
                 "type": "string",
             },
             "assignee": {
-                "value": "rafael.nunes@bhub.ai",  # customer_data["Analista_dp"],
+                "value": "rafael.nunes@bhub.ai",  # TODO: customer_data["Analista_dp"],
                 "type": "string",
             },
             "tem_movimento_folha": {
