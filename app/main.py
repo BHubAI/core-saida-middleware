@@ -19,11 +19,10 @@ logger = get_logger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan_subscribers(app: FastAPI):
     """Startup and shutdown events for the FastAPI application."""
 
     logger.info("Starting up...")
-    logger.info(f"ADDR ENDPOINT: {settings.AWS_ENDPOINT_URL}")
     add_postgresql_extension()
 
     logger.info("Starting SQS subscriber...")
@@ -34,7 +33,7 @@ async def lifespan(app: FastAPI):
             pstart_subscriber = ProcessStarterSubscriber(queue_name="process_starter.fifo")
 
             # We need to keep a reference to the task to prevent it from being garbage collected
-            # pstart_subscriber_task = asyncio.create_task(pstart_subscriber.start())  # noqa F841: Assigned not used
+            pstart_subscriber_task = asyncio.create_task(pstart_subscriber.start())  # noqa F841: Assigned not used
             logger.info(f"SQS subscriber task created: {pstart_subscriber}")
             subscribers.append(pstart_subscriber)
             break
@@ -52,6 +51,18 @@ async def lifespan(app: FastAPI):
     for subscriber in subscribers:
         await subscriber.stop()
         logger.info("SQS subscriber stopped")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup and shutdown events for the FastAPI application."""
+
+    logger.info("Starting up...")
+    add_postgresql_extension()
+
+    yield
+
+    logger.info("Shutting down...")
 
 
 def create_service() -> FastAPI:

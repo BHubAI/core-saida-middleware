@@ -22,7 +22,7 @@ def upgrade() -> None:
     op.create_table(
         'process_event_log',
         sa.Column('id', sa.Integer, primary_key=True, server_default=sa.text("nextval('process_event_log_id_seq')")),
-        sa.Column('process_key', sa.String(length=255), nullable=False),
+        sa.Column('process_id', sa.String(length=255), nullable=False),
         sa.Column('event_type', sa.String(length=255), nullable=False),
         sa.Column('event_data', sa.JSON, nullable=True),
         sa.Column('created_at', sa.DateTime, nullable=False),

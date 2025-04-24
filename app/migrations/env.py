@@ -72,15 +72,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    # connectable = AsyncEngine(
-    #     engine_from_config(
-    #         config.get_section(config.config_ini_section),
-    #         prefix="sqlalchemy.",
-    #         poolclass=pool.NullPool,
-    #         future=True,
-    #     )
-    # )
-    connectable = create_engine(settings.POSTGRES_URL, echo=True)
+    connectable = create_engine(settings.postgres_url, echo=True)
 
     with connectable.connect() as connection:
         do_run_migrations(connection)
