@@ -15,7 +15,7 @@ from service.camunda.enums import RegimeTributario
 class FechamentoFolha3Process(CamundaProcessStarter):
     def __init__(self, *args, **kwargs):
         super().__init__("fechamento_folha_dp_3", *args, **kwargs)
-        self.s3_file_path = "/dp/fechamento-folha/folha-elegiveis.csv"
+        self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
         return True
@@ -42,6 +42,16 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         if settings.ENV == "dev":
             return "https://task-manager.cexp-dev.bhub.ai/upload-url"
         return "https://task-manager.bhub.ai/upload-url"
+
+    def get_hr_pay_day(self, customer_data: dict):
+        if customer_data["Data de pagamento de folha (tratado)"] == "n/a":
+            return "30"
+        return customer_data["Data de pagamento de folha (tratado)"]
+
+    def get_hr_pay_day_type(self, customer_data: dict):
+        if customer_data["útil ou corrido"] == "útil":
+            return "dia útil"
+        return "NTH_WORK_DAY"
 
     def audit_event(self, process_id: str, event_type: ProcessEventTypes, process_data: dict):
         """Audit event"""
@@ -75,7 +85,10 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                         "customer_profile": customer_data["customer_profile"],
                         "company_tax_type": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
                         "codigo_dominio": customer_data["COD Dominio"],
-                        "operational_status": {"hr_pay_day": "último dia do mês", "hr_pay_day_type": "NTH_WORK_DAY"},
+                        "operational_status": {
+                            "hr_pay_day": self.get_hr_pay_day(customer_data),
+                            "hr_pay_day_type": self.get_hr_pay_day_type(customer_data),
+                        },
                     }
                 ),
                 "type": "json",
@@ -93,7 +106,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "cliente_possui_movimento_folha": {
-                "value": True if customer_data["Tipo de folha"] != "sem movimento" else False,
+                "value": True if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
                 "type": "boolean",
             },
             "cliente_elegibilidade": {
@@ -105,7 +118,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "tem_movimento_folha": {
-                "value": True if customer_data["Tipo de folha"] != "sem movimento" else False,
+                "value": True if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
                 "type": "boolean",
             },
             "tem_contribuicao": {

@@ -28,7 +28,8 @@ s3_client = boto3.client(
 def create_bucket(bucket_name: str) -> bool:
     """Create a new S3 bucket."""
     try:
-        s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": REGION})
+        # For LocalStack, we don't need to specify location constraint
+        s3_client.create_bucket(Bucket=bucket_name)
         logger.info(f"Bucket '{bucket_name}' created successfully")
         return True
     except Exception as e:
