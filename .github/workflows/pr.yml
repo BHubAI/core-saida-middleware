@@ -5,8 +5,8 @@ name: pull-request
 on:
   pull_request:
     branches:
-      - master
-      - develop
+      - main
+      - staging
 
 jobs:
   lint:
