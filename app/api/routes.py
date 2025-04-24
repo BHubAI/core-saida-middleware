@@ -1,3 +1,4 @@
+import requests
 from api.base.endpoints import BaseEndpoint
 from api.deps import DDLogger
 from api.v1.camunda.process_starter import ProcessMessageEndpoint
@@ -30,6 +31,13 @@ def register_routes(app: FastAPI):
     def health_check(logger: DDLogger) -> JSONResponse:
         logger.info("Health check requested")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
+
+    @app.get("/make-request")
+    def make_request(url: str, logger: DDLogger):
+        logger.info("Making request")
+        response = requests.get(f"http://{url}")
+
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok", "message": response.text})
 
     for router in api_routers.get_routers():
         app.include_router(router)
