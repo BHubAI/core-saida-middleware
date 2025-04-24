@@ -46,9 +46,7 @@ def setup_logger(name: str) -> logging.Logger:
     if settings.DD_ENV != "dev":
         # Create a handler that sends logs to Datadog
         dd_handler = DatadogHandler()
-        dd_handler.setFormatter(
-            logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        )
+        dd_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
 
         # Add the handler to the logger if it doesn't already have it
         if not any(isinstance(h, DatadogHandler) for h in logger.handlers):
