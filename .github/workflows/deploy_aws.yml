@@ -9,7 +9,7 @@ env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: core-saida/orchestrator
   ECS_SERVICE: OrchestratorService
-  ECS_CLUSTER: CoreSaidaInfrastructure-OrchestratorAppOrchestratorCluster6B9CD047-W4mB5DlhsWx2
+  ECS_CLUSTER: CoreSaidaInfrastructure-OrchestratorAppOrchestratorCluster6B9CD047-0vEgYcDBWBTH
   ECS_TASK_DEFINITION: .aws/task-definition_dev.json
   CONTAINER_NAME: OrchestratorContainer
 
