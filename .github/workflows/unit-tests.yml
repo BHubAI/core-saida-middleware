@@ -17,7 +17,7 @@ jobs:
           docker compose -f ops/docker-compose.test.yml exec app pytest --cov-report=xml:/data/coverage.xml --cov=app/ tests/
       - name: Codecov
         if: success()
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           files: /data/coverage.xml
           flags: unittests
