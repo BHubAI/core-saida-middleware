@@ -21,4 +21,4 @@ class ProcessMessageEndpoint(BaseEndpoint):
 
         @self.router.get("/s3-object")
         async def get_s3_object(object_path: str, logger: DDLogger, db_session: DBSession):
-            return s3_utils.get_object("core-saida", object_path)
+            return s3_utils.get_object("core-saida-dp", object_path)
