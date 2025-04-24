@@ -10,7 +10,7 @@ env:
   ECR_REPOSITORY: core-saida/orchestrator
   ECS_SERVICE: OrchestratorService
   ECS_CLUSTER: CoreSaidaInfrastructure-OrchestratorAppOrchestratorCluster6B9CD047-W4mB5DlhsWx2
-  ECS_TASK_DEFINITION: .aws/task-definition.json
+  ECS_TASK_DEFINITION: .aws/task-definition_dev.json
   CONTAINER_NAME: OrchestratorContainer
 
 permissions:
