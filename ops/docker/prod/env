@@ -1,0 +1,24 @@
+# app
+SECRET_KEY=Uj8K#mP9$vL2nX5@qR4wY7hC3bE6tN
+ENV=prod
+PROJECT_NAME=core-saida-orchestrator
+VERSION=v1
+DEBUG=False
+
+# BHub
+CORE_APP_URL=https://8980-200-7-124-1.ngrok-free.app
+CORE_APP_API_KEY='<some api key>'
+
+CAMUNDA_ENGINE_URL=https://orchestrator-gateway.bhub.ai/coresaida-prod/engine-rest
+CAMUNDA_X_API_KEY='<get from secret>'
+CAMUNDA_USERNAME='<get from secret>'
+CAMUNDA_PASSWORD='<get from secret>'
+
+# AWS
+AWS_REGION=us-east-1
+
+# Datadog
+DD_ENV=dev  # or staging, prod
+DD_SERVICE=core-saida-orchestrator
+DD_VERSION=1.0.0
+DD_API_KEY=your_api_key_here

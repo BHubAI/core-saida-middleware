@@ -1,0 +1,72 @@
+volumes:
+  base-data:
+  db-data:
+
+services:
+  db:
+    container_name: core-db
+    image: postgres:15-alpine
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  localstack:
+    container_name: localstack
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566" # LocalStack Gateway
+      - "4510-4559:4510-4559" # external services port range
+    environment:
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - LAMBDA_EXECUTOR=docker
+      - SERVICES=s3,sqs,sns,dynamodb
+      - DATA_DIR=/var/lib/localstack/data
+      - TMPDIR=/var/lib/localstack/tmp
+      - HOST_TMPDIR=/var/lib/localstack
+      - PERSISTENCE=1
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./localstack:/var/lib/localstack"
+      - "./localstack/startup.sh:/etc/localstack/init/ready.d/startup.sh"
+    restart: always
+    command:
+      [
+        "/bin/bash",
+        "-c",
+        "chmod +x /etc/localstack/init/ready.d/startup.sh && localstack start",
+      ]
+
+  backend:
+    container_name: core-backend
+    restart: always
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: ./ops/docker/dev/Dockerfile
+      args:
+        env: ${ENV}
+    ports:
+      - "8000:8000"
+    command: |
+      bash -c "
+      while !</dev/tcp/db/5432; do sleep 1; done;
+      uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level debug"
+    depends_on:
+      - db
+      - localstack
+    environment:
+      - PYTHONUNBUFFERED=0
+      - PYTHONPATH=/app
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - POSTGRES_HOST=db
+    tty: true
+    stdin_open: true
+    volumes:
+      - base-data:/data
+      - ./app/:/app
