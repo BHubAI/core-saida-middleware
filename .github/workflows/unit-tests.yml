@@ -1,8 +1,7 @@
 ---
-
 name: unit-tests
 
-on: [workflow_call]  # allow this workflow to be called from other workflows
+on: [workflow_call] # allow this workflow to be called from other workflows
 
 jobs:
   unit_tests:
@@ -13,8 +12,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Run unit tests
         run: |
-          docker compose -f ops/docker-compose.test.yml up --detach --wait
-          docker compose -f ops/docker-compose.test.yml exec app pytest --cov-report=xml:/data/coverage.xml --cov=app/ tests/
+          docker compose -f ops/docker/test/docker-compose.test.yml up --detach --wait
+          docker compose -f ops/docker/test/docker-compose.test.yml exec app pytest --cov-report=xml:/data/coverage.xml --cov=app/ tests/
       - name: Codecov
         if: success()
         uses: codecov/codecov-action@v5
