@@ -7,20 +7,49 @@ jobs:
   unit_tests:
     runs-on: ubuntu-latest
     name: Run unit tests
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Run unit tests
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
         run: |
-          docker compose -f ops/docker/test/docker-compose.test.yml up --detach --wait
-          docker compose -f ops/docker/test/docker-compose.test.yml exec app pytest --cov-report=xml:/data/coverage.xml --cov=app/ tests/
-      - name: Codecov
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run unit tests
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        run: |
+          pytest --cov=app --cov-report=xml:/data/coverage.xml
+
+      - name: Upload coverage to Codecov
         if: success()
         uses: codecov/codecov-action@v5
         with:
           files: /data/coverage.xml
           flags: unittests
-      - name: Clean-up
-        if: always()
-        run: |
-          docker compose -f ops/docker-compose.test.yml down -v
