@@ -33,10 +33,9 @@ alembic-migrate:
 	@echo "applying migration...."
 	docker compose exec $(BACKEND_CONTAINER_NAME) alembic upgrade head
 
-# lint
 test:
 	@echo "running pytest...."
-	docker compose exec $(BACKEND_CONTAINER_NAME) pytest --cov-report xml --cov=app tests/
+	docker compose exec $(BACKEND_CONTAINER_NAME) pytest --cov-report term --cov-report xml:tests/coverage.xml --cov=app tests/
 
 lint:
 	@echo "running ruff...."

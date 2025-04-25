@@ -1,27 +1,61 @@
 ---
-
 name: unit-tests
 
-on: [workflow_call]  # allow this workflow to be called from other workflows
+on: [workflow_call] # allow this workflow to be called from other workflows
 
 jobs:
   unit_tests:
     runs-on: ubuntu-latest
     name: Run unit tests
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Run unit tests
-        run: |
-          docker compose -f ops/docker-compose.test.yml up --detach --wait
-          docker compose -f ops/docker-compose.test.yml exec app pytest --cov-report=xml:/data/coverage.xml --cov=app/ tests/
-      - name: Codecov
-        if: success()
-        uses: codecov/codecov-action@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          files: /data/coverage.xml
-          flags: unittests
-      - name: Clean-up
-        if: always()
+          python-version: "3.12"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
+      - name: Run unit tests
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+          PYTHONPATH: ${{ github.workspace }}/app:${{ github.workspace }}
         run: |
-          docker compose -f ops/docker-compose.test.yml down -v
+          poetry run pytest --cov=app --cov-report=xml:coverage.xml
