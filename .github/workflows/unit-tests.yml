@@ -57,11 +57,11 @@ jobs:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_db
         run: |
-          poetry run pytest --cov=app --cov-report=xml:/data/coverage.xml
+          poetry run pytest --cov=app --cov-report=xml:coverage.xml
 
       - name: Upload coverage to Codecov
         if: success()
         uses: codecov/codecov-action@v5
         with:
-          files: /data/coverage.xml
+          files: coverage.xml
           flags: unittests
