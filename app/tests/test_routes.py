@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from fastapi.testclient import TestClient
 
@@ -19,7 +19,10 @@ def test_health(monkeypatch: MagicMock):
     assert response.json() == {"status": "ok"}
 
 
-def test_melius_webhook():
+@patch("app.api.v1.melius.webhook.httpx.post", new_callable=AsyncMock)
+def test_melius_webhook(mock_post: AsyncMock):
+    mock_post.return_value.status_code = 204
+
     webhook_request = {
         "idTarefaCliente": "29c16b26-2213-11f0-a8ae-129143b339f3",
         "tipoTarefaRpa": "traDctf",
@@ -30,20 +33,23 @@ def test_melius_webhook():
         ],
     }
     response = client.post("/api/melius/webhook", json=webhook_request)
-    assert response.status_code == 200
-    assert response.json() == {
-        "message": "Melius webhook received",
-        "camunda_request": {
-            "messageName": "retorno:traDctf",
-            "processVariables": {
-                "statusTarefaRpa": {"value": 1, "type": "integer"},
-                "arquivosGerados": {
-                    "value": [
-                        {"url": "http://example.com/file1.txt", "nomeArquivo": "file1.txt"},
-                        {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt"},
-                    ]
-                },
+
+    camunda_request = {
+        "messageName": "retorno:traDctf",
+        "processVariables": {
+            "statusTarefaRpa": {"value": 1, "type": "integer"},
+            "arquivosGerados": {
+                "value": [
+                    {"url": "http://example.com/file1.txt", "nomeArquivo": "file1.txt"},
+                    {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt"},
+                ]
             },
-            "processInstanceId": "29c16b26-2213-11f0-a8ae-129143b339f3",
         },
+        "processInstanceId": "29c16b26-2213-11f0-a8ae-129143b339f3",
     }
+    mock_post.assert_called_once_with(
+        "http://localhost:8080/engine-rest/message",
+        json=camunda_request,
+    )
+
+    assert response.status_code == 200

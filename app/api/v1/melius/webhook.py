@@ -1,5 +1,6 @@
 from enum import IntEnum, StrEnum
 from typing import Any
+import httpx
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 from api.base.endpoints import BaseEndpoint
@@ -113,4 +114,9 @@ class MeliusWebhookEndpoint(BaseEndpoint):
                 process_instance_id=request.id_tarefa_cliente,
             )
 
-            return {"message": "Melius webhook received", "camunda_request": camunda_request}
+            httpx.post(
+                "http://localhost:8080/engine-rest/message",
+                json=camunda_request.model_dump(by_alias=True),
+            )
+
+            return {"message": "Melius webhook received"}
