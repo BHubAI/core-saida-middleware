@@ -68,7 +68,7 @@ async def lifespan(app: FastAPI):
 def create_service() -> FastAPI:
     app = FastAPI(
         title="core-saida-orchestrator",
-        description="Cire Saida Orchestrator",
+        description="Core Saida Orchestrator",
         version=settings.VERSION,
         openapi_url=f"/{settings.VERSION}/openapi.json",
         lifespan=lifespan,
