@@ -28,8 +28,6 @@ class Settings(BaseSettings):
     CAMUNDA_USERNAME: str = Field(default="")
     CAMUNDA_PASSWORD: str = Field(default="")
 
-    # 60 minutes * 24 hours * 8 days = 8 days
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=60 * 24 * 8)
     BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = Field(default=[])
     LOG_LEVEL: int = Field(default=logging.INFO)
 
@@ -52,6 +50,10 @@ class Settings(BaseSettings):
     WEB_CONCURRENCY: int = Field(default=9)
     MAX_OVERFLOW: int = Field(default=64)
     POOL_SIZE: Optional[int] = Field(default=None)
+
+    # RPA Settings
+    MELIUS_RPA_URL: str = Field(default="")
+    MELIUS_RPA_TOKEN: str = Field(default="")
 
     @field_validator("POOL_SIZE", mode="before")
     @classmethod

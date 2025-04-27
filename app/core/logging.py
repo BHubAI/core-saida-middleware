@@ -1,4 +1,5 @@
 import logging
+from functools import lru_cache
 
 from core.config import settings
 from core.logging_config import get_logger
@@ -29,6 +30,7 @@ class DatadogHandler(logging.Handler):
             self.handleError(record)
 
 
+@lru_cache(maxsize=1)
 def setup_logger(name: str) -> logging.Logger:
     """
     Set up a logger with Datadog integration.

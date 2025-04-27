@@ -33,41 +33,33 @@ def create_db():
 
 
 @pytest.fixture
-def client():
-    return TestClient(app)
-
-
-@pytest.fixture
-def db_session():
-    # Create PostgreSQL test database engine
+def session_maker():
     test_db_url = settings.postgres_url.replace(settings.POSTGRES_DB, "test_db")
     engine = create_engine(
         test_db_url,
         echo=settings.DEBUG,
         future=True,
     )
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-    print("Creating tables...")
-    # Create all tables
-    BaseModel.metadata.create_all(bind=engine)
-
-    session = TestingSessionLocal()
-    try:
-        yield session
-    finally:
-        session.close()
-        print("Dropping tables...")
-        # Drop all tables after test
-        BaseModel.metadata.drop_all(bind=engine)
-
-
-@pytest.fixture(autouse=True)
-def override_get_session(db_session):
-    def override_get_db():
+    with engine.connect():
+        print("Creating tables...")
+        BaseModel.metadata.create_all(bind=engine)
         try:
-            yield db_session
+            yield sessionmaker(autocommit=False, autoflush=False, bind=engine)
         finally:
-            db_session.rollback()
+            print("Dropping tables...")
+            BaseModel.metadata.drop_all(bind=engine)
 
-    app.dependency_overrides[get_session] = override_get_db
+
+@pytest.fixture
+def db_session(session_maker):
+    with session_maker() as session:
+        try:
+            yield session
+        finally:
+            session.close()
+
+
+@pytest.fixture
+def client(db_session):
+    app.dependency_overrides[get_session] = lambda: db_session
+    return TestClient(app)
