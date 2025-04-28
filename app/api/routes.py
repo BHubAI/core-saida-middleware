@@ -2,8 +2,8 @@ from api.base.endpoints import BaseEndpoint
 from api.camunda.process_starter import ProcessMessageEndpoint
 from api.camunda.side_effect import SideEffectEndpoint
 from api.deps import DDLogger
-from api.v1.melius.webhook import MeliusWebhookEndpoint
 from api.rpa.melius import MeliusEndpoint
+from api.v1.melius.webhook import MeliusWebhookEndpoint
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse, PlainTextResponse
 

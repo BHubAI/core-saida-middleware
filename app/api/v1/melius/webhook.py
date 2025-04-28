@@ -2,11 +2,10 @@ from enum import IntEnum, StrEnum
 from typing import Any
 
 import httpx
-from pydantic import BaseModel, ConfigDict
-from pydantic.alias_generators import to_camel
-
 from api.base.endpoints import BaseEndpoint
 from core.config import settings
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
 
 class TipoTarefaRpa(StrEnum):
