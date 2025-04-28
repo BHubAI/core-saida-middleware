@@ -34,7 +34,7 @@ def test_melius_webhook(mock_post: AsyncMock):
     }
     response = client.post("/api/melius/webhook", json=webhook_request)
 
-    camunda_request = {
+    expected_camunda_request = {
         "messageName": "retorno:traDctf",
         "processVariables": {
             "statusTarefaRpa": {"value": 1, "type": "integer"},
@@ -49,7 +49,7 @@ def test_melius_webhook(mock_post: AsyncMock):
     }
     mock_post.assert_called_once_with(
         "http://localhost:8080/engine-rest/message",
-        json=camunda_request,
+        json=expected_camunda_request,
     )
 
     assert response.status_code == 200
