@@ -16,12 +16,10 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
         process_data["token"] = settings.MELIUS_RPA_TOKEN
         logger.info(f"Starting Melius RPA with process data: {process_data}")
 
-        process_data["urlRetorno"] = (
-            "https://orquestrador-dev.team-saida.bhub.ai/api/melius/webhook"  # settings.MELIUS_RPA_CALLBACK_URL
-        )
+        process_data["urlRetorno"] = f"{settings.CORE_APP_URL}/api/melius/webhook"  # Link do webhook
+
         process_data["tokenRetorno"] = secrets.token_hex(16)
-        MELIUS_URL = "http://hml.api.integracoes-rpa-v1.melius.software"
-        url = f"{MELIUS_URL}/envia-tarefa-rpa"
+        url = f"{settings.MELIUS_RPA_URL}/envia-tarefa-rpa"
 
         logger.info(f"Sending request to Melius RPA with url: {url} and process data: {process_data}")
         response = requests.post(url, json=process_data)
