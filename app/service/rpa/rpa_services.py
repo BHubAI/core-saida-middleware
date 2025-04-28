@@ -31,8 +31,7 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
             )
         )
 
-        return {"success": True}
-        # return response.json()
+        return response.json()
     except Exception as e:
         logger.error(f"Error starting Melius RPA: {e}")
         raise RPAException(str(e))
