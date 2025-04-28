@@ -15,8 +15,8 @@ CAMUNDA_USERNAME='<get from secret>'
 CAMUNDA_PASSWORD='<get from secret>'
 
 # Melius
-MELIUS_RPA_URL="http://hml.api.integracoes-rpa-v1.melius.software/"
-MELIUS_RPA_TOKEN="1234567890123"
+MELIUS_RPA_URL="http://hml.api.integracoes-rpa-v1.melius.software"
+MELIUS_RPA_CALLBACK_URL="https://orquestrador-dev.team-saida.bhub.ai/api/melius/webhook"
 
 # AWS
 AWS_REGION=us-east-1

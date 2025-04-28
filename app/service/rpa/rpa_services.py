@@ -1,3 +1,5 @@
+import secrets
+
 import requests
 from api.deps import DBSession
 from core.config import settings
@@ -14,7 +16,8 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
         process_data["token"] = settings.MELIUS_RPA_TOKEN
         logger.info(f"Starting Melius RPA with process data: {process_data}")
 
-        # TODO: Falta incluir no process_data a url de callback e algum código verificador
+        process_data["urlRetorno"] = settings.MELIUS_RPA_CALLBACK_URL
+        process_data["tokenRetorno"] = secrets.token_hex(16)
 
         response = requests.post(f"{settings.MELIUS_RPA_URL}/envia-tarefa-rpa", json=process_data)
         response.raise_for_status()
@@ -28,7 +31,8 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
             )
         )
 
-        return response.json()
+        return {"success": True}
+        # return response.json()
     except Exception as e:
         logger.error(f"Error starting Melius RPA: {e}")
         raise RPAException(str(e))

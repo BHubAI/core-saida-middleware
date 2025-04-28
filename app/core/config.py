@@ -54,6 +54,7 @@ class Settings(BaseSettings):
     # RPA Settings
     MELIUS_RPA_URL: str = Field(default="")
     MELIUS_RPA_TOKEN: str = Field(default="")
+    MELIUS_RPA_CALLBACK_URL: str = Field(default="")
 
     @field_validator("POOL_SIZE", mode="before")
     @classmethod
