@@ -33,21 +33,26 @@ def create_db():
 
 
 @pytest.fixture
-def session_maker():
+def engine():
     test_db_url = settings.postgres_url.replace(settings.POSTGRES_DB, "test_db")
+
     engine = create_engine(
         test_db_url,
         echo=settings.DEBUG,
         future=True,
     )
     with engine.connect():
-        print("Creating tables...")
         BaseModel.metadata.create_all(bind=engine)
         try:
-            yield sessionmaker(autocommit=False, autoflush=False, bind=engine)
+            yield engine
         finally:
-            print("Dropping tables...")
             BaseModel.metadata.drop_all(bind=engine)
+            engine.dispose()
+
+
+@pytest.fixture
+def session_maker(engine):
+    yield sessionmaker(autocommit=False, autoflush=True, expire_on_commit=False, bind=engine)
 
 
 @pytest.fixture
