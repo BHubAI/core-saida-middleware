@@ -45,9 +45,7 @@ def lambda_handler(event, context):
         # Make the HTTP POST request
         response = http.request("POST", url, body=json.dumps(payload), headers=headers)
 
-        logger.info(
-            f"Response from Core - Status: {response.status}, Body: {response.data.decode('utf-8')}"
-        )
+        logger.info(f"Response from Core - Status: {response.status}, Body: {response.data.decode('utf-8')}")
 
         return {"statusCode": response.status, "headers": {"Content-Type": "application/json"}}
 

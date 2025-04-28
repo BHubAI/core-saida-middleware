@@ -1,7 +1,8 @@
+from datetime import datetime
 from enum import Enum
 
 from models.base import BaseModel
-from sqlmodel import JSON, Column, Field
+from sqlmodel import JSON, Column, DateTime, Field
 
 
 class ProcessEventTypes(str, Enum):
@@ -17,3 +18,4 @@ class ProcessEventLog(BaseModel, table=True):
     process_id: str = Field(..., description="The key of the process")
     event_type: str = Field(..., description="The type of the event")
     event_data: dict = Field(sa_column=Column(JSON), description="The data of the event")
+    created_at: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))

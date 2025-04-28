@@ -2,25 +2,16 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from fastapi.testclient import TestClient
 
-from main import app
 
-
-client = TestClient(app)
-
-
-def test_health(monkeypatch: MagicMock):
-    monkeypatch.setenv("POSTGRES_USER", "test")
-    monkeypatch.setenv("POSTGRES_PASSWORD", "test")
-    monkeypatch.setenv("POSTGRES_DB", "test")
-    monkeypatch.setenv("POSTGRES_HOST", "localhost")
-
+def test_health(client: TestClient):
     response = client.get("/health")
+
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
 
 @patch("app.api.v1.melius.webhook.httpx.post", new_callable=AsyncMock)
-def test_melius_webhook(mock_post: AsyncMock):
+def test_melius_webhook(mock_post: AsyncMock, client: TestClient):
     mock_post.return_value.status_code = 204
 
     webhook_request = {
@@ -51,5 +42,3 @@ def test_melius_webhook(mock_post: AsyncMock):
         "http://localhost:8080/engine-rest/message",
         json=expected_camunda_request,
     )
-
-    assert response.status_code == 200

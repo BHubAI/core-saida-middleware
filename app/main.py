@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 
 from api import routes
 from core.config import settings
-from core.exceptions import CoreSaidaOrchestratorException, ObjectNotFound
+from core.exceptions import CoreSaidaOrchestratorException, ObjectNotFound, RPAException
 from core.logging_config import configure_logging, get_logger
 from db.session import add_postgresql_extension
 from fastapi import FastAPI, Request, status
@@ -77,7 +77,7 @@ def create_service() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_origins=["*"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -98,6 +98,12 @@ def create_service() -> FastAPI:
     async def core_saida_orchestrator_exception_handler(request: Request, exc: CoreSaidaOrchestratorException):
         error_msg = str(exc)
         logger.error(f"Core Saida Orchestrator error: {error_msg}")
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": error_msg})
+
+    @app.exception_handler(RPAException)
+    async def rpa_exception_handler(request: Request, exc: RPAException):
+        error_msg = str(exc)
+        logger.error(f"RPA error: {error_msg}")
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": error_msg})
 
     return app

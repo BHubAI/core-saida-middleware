@@ -1,8 +1,9 @@
 from api.base.endpoints import BaseEndpoint
+from api.camunda.process_starter import ProcessMessageEndpoint
+from api.camunda.side_effect import SideEffectEndpoint
 from api.deps import DDLogger
-from api.v1.camunda.process_starter import ProcessMessageEndpoint
-from api.v1.camunda.side_effect import SideEffectEndpoint
 from api.v1.melius.webhook import MeliusWebhookEndpoint
+from api.rpa.melius import MeliusEndpoint
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse, PlainTextResponse
 
@@ -13,6 +14,7 @@ class Routers:
             SideEffectEndpoint(),
             ProcessMessageEndpoint(),
             MeliusWebhookEndpoint(),
+            MeliusEndpoint(),
         ]
 
     def get_routers(self):
@@ -28,7 +30,6 @@ def register_routes(app: FastAPI):
         return PlainTextResponse("User-agent: *\nDisallow: /")
 
     @app.get("/health")
-    @app.get("/healthz")  # TODO: Remove this endpoint after the migration to the new health check endpoint
     def health_check(logger: DDLogger) -> JSONResponse:
         logger.info("Health check requested")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})

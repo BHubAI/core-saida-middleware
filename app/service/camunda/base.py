@@ -1,9 +1,9 @@
 import logging
 
 import requests
+from api.deps import DBSession
 from core.config import settings
 from core.exceptions import ObjectNotFound
-from db.session import DBSession
 from models.camunda import ProcessEventLog, ProcessEventTypes
 from service import camunda
 
