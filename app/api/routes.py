@@ -1,7 +1,8 @@
 from api.base.endpoints import BaseEndpoint
+from api.camunda.process_starter import ProcessMessageEndpoint
+from api.camunda.side_effect import SideEffectEndpoint
 from api.deps import DDLogger
-from api.v1.camunda.process_starter import ProcessMessageEndpoint
-from api.v1.camunda.side_effect import SideEffectEndpoint
+from api.rpa.melius import MeliusEndpoint
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse, PlainTextResponse
 
@@ -11,6 +12,7 @@ class Routers:
         self.endpoints: list[BaseEndpoint] = [
             SideEffectEndpoint(),
             ProcessMessageEndpoint(),
+            MeliusEndpoint(),
         ]
 
     def get_routers(self):

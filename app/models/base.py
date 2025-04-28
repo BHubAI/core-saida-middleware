@@ -1,12 +1,11 @@
 import uuid as uuid_pkg
-from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import text
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.sql import expression
 from sqlalchemy.types import DateTime
-from sqlmodel import Column, Field, SQLModel
+from sqlmodel import Field, SQLModel
 
 
 # https://docs.sqlalchemy.org/en/20/core/compiler.html#utc-timestamp-function
@@ -25,15 +24,6 @@ class BaseModel(SQLModel):
         default=None,
         primary_key=True,
         index=True,
-    )
-
-    created_at: Optional[datetime] = Field(
-        sa_column=Column(
-            DateTime(timezone=True),
-            server_default=utcnow(),
-            nullable=False,
-        ),
-        default_factory=datetime.utcnow,
     )
 
 
