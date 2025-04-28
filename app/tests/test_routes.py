@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 from fastapi.testclient import TestClient
 
@@ -42,3 +42,6 @@ def test_melius_webhook(mock_post: AsyncMock, client: TestClient):
         "http://localhost:8080/engine-rest/message",
         json=expected_camunda_request,
     )
+
+    assert response.status_code == 200
+    assert response.json() == {"message": "Melius webhook received"}
