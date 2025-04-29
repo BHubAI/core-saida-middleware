@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, patch
+
 from fastapi.testclient import TestClient
 from httpx import Request, Response, codes
 from models.rpa import RPAEventLog, RPAEventTypes
@@ -42,8 +43,7 @@ def test_start_rpa_service(db_session, mocker):
 @patch("service.rpa.rpa_services.httpx.post")
 def test_melius_webhook(mock_post: MagicMock, client: TestClient, db_session):
     mock_post.return_value = Response(
-        status_code=codes.NO_CONTENT,
-        request=Request("POST", "http://localhost:8080/engine-rest/message")
+        status_code=codes.NO_CONTENT, request=Request("POST", "http://localhost:8080/engine-rest/message")
     )
 
     webhook_request = {

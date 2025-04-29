@@ -3,11 +3,12 @@ import secrets
 import httpx
 import requests
 from api.deps import DBSession
-from app.schemas.rpa_schema import CamundaRequest, MeliusWebhookRequest
 from core.config import settings
 from core.exceptions import RPAException
 from core.logging import setup_logger
 from models.rpa import RPAEventLog, RPAEventTypes, RPASource
+
+from app.schemas.rpa_schema import CamundaRequest, MeliusWebhookRequest
 
 
 logger = setup_logger(__name__)
