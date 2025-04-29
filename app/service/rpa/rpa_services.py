@@ -1,7 +1,9 @@
 import secrets
 
+import httpx
 import requests
 from api.deps import DBSession
+from app.schemas.rpa_schema import CamundaRequest, MeliusWebhookRequest
 from core.config import settings
 from core.exceptions import RPAException
 from core.logging import setup_logger
@@ -38,3 +40,40 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
     except Exception as e:
         logger.error(f"Error starting Melius RPA: {e}")
         raise RPAException(str(e))
+
+
+async def handle_webhook_request(request: MeliusWebhookRequest):
+    """
+    Webhook para receber update dos RPAs da Melius.
+
+    - Recebe o payload do webhook
+    - Processa o payload
+    - Envia o payload para o Camunda
+    """
+
+    camunda_request = CamundaRequest(
+        message_name=f"retorno:{request.tipo_tarefa_rpa}",
+        process_variables={
+            "statusTarefaRpa": {
+                "value": request.status_tarefa_rpa,
+                "type": "integer",
+            },
+            "arquivosGerados": {
+                "value": [
+                    {
+                        "url": arquivo.url,
+                        "nomeArquivo": arquivo.nome_arquivo,
+                    }
+                    for arquivo in request.arquivos_gerados
+                ],
+            },
+        },
+        process_instance_id=request.id_tarefa_cliente,
+    )
+
+    await httpx.post(
+        f"{settings.CAMUNDA_ENGINE_URL}/message",
+        json=camunda_request.model_dump(by_alias=True),
+    )
+
+    return {"message": "Melius webhook received"}

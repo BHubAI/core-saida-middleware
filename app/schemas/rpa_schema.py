@@ -1,4 +1,5 @@
-from enum import Enum, IntEnum
+from enum import IntEnum, StrEnum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -8,7 +9,7 @@ class MeliusProcessRequest(BaseModel):
     process_data: dict
 
 
-class TipoTarefaRpa(str, Enum):
+class TipoTarefaRpa(StrEnum):
     """
     Tipos de tarefa RPA
 
@@ -62,8 +63,19 @@ class MeliusWebhookRequest(BaseModel):
     id_tarefa_cliente: str
     tipo_tarefa_rpa: TipoTarefaRpa
     status_tarefa_rpa: StatusTarefaRpa
-    arquivosGerados: list[ArquivoGerado]
+    arquivos_gerados: list[ArquivoGerado]
 
     model_config = ConfigDict(
         alias_generator=to_camel,
+    )
+
+
+class CamundaRequest(BaseModel):
+    message_name: str
+    process_variables: dict[str, dict[str, Any]]
+    process_instance_id: str
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        validate_by_name=True,
     )
