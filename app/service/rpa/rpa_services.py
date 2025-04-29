@@ -7,6 +7,7 @@ from core.config import settings
 from core.exceptions import RPAException
 from core.logging import setup_logger
 from models.rpa import RPAEventLog, RPAEventTypes, RPASource
+from sqlalchemy import select
 
 from app.schemas.rpa_schema import CamundaRequest, MeliusWebhookRequest
 
@@ -51,6 +52,15 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
     - Processa o payload
     - Envia o payload para o Camunda
     """
+    stmt = select(RPAEventLog).where(
+        RPAEventLog.event_type == RPAEventTypes.START,
+        RPAEventLog.process_id == request.id_tarefa_cliente,
+        RPAEventLog.event_data.op("->>")("tokenRetorno") == request.token_retorno,
+    )
+    rpa_event_log_start = db_session.execute(stmt).scalar_one_or_none()
+
+    if not rpa_event_log_start:
+        raise RPAException("Token inválido ou tarefa não encontrada")
 
     camunda_request = CamundaRequest(
         message_name=f"retorno:{request.tipo_tarefa_rpa}",
@@ -83,7 +93,7 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
             process_id=request.id_tarefa_cliente,
             event_type=RPAEventTypes.FINISH,
             event_source=RPASource.MELIUS,
-            event_data={},
+            event_data=rpa_event_log_start.event_data,
         )
     )
 
