@@ -43,7 +43,7 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
         raise RPAException(str(e))
 
 
-async def handle_webhook_request(request: MeliusWebhookRequest):
+def handle_webhook_request(request: MeliusWebhookRequest):
     """
     Webhook para receber update dos RPAs da Melius.
 
