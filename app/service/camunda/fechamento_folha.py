@@ -60,6 +60,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 process_id=process_id,
                 event_type=event_type,
                 event_data=process_data,
+                created_at=datetime.datetime.now(),
             )
         )
         self.db_session.commit()
@@ -135,6 +136,10 @@ class FechamentoFolha3Process(CamundaProcessStarter):
             },
             "upload_url": {
                 "value": self.get_upload_url(),
+                "type": "string",
+            },
+            "start_rpa_url": {
+                "value": f"{settings.CORE_APP_URL}/api/melius/start-rpa",
                 "type": "string",
             },
         }

@@ -25,6 +25,12 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
         response = requests.post(url, json=process_data)
         response.raise_for_status()
 
+        logger.info(f"Response from Melius RPA: {response.json()}")
+        content = response.json()
+        id_task = content.get("idTarefaRpa")
+
+        process_data["idTarefaRPA"] = id_task
+
         db_session.add(
             RPAEventLog(
                 process_id=process_data.get("process_id", ""),
@@ -34,7 +40,7 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
             )
         )
 
-        return response.json()
+        return content
     except Exception as e:
         logger.error(f"Error starting Melius RPA: {e}")
         raise RPAException(str(e))
