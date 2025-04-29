@@ -63,7 +63,7 @@ class MeliusWebhookRequest(BaseModel):
     id_tarefa_cliente: str
     tipo_tarefa_rpa: TipoTarefaRpa
     status_tarefa_rpa: StatusTarefaRpa
-    arquivos_gerados: list[ArquivoGerado]
+    arquivos_gerados: list[ArquivoGerado] | None = None
 
     model_config = ConfigDict(
         alias_generator=to_camel,

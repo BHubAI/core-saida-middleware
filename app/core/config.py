@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     VERSION: str = Field(default="v1")
     ENV: str = Field(default="dev")
     DEBUG: bool = Field(default=False)
+    CORE_APP_URL: str = Field(default="")
 
     # AWS settings(localstack values by default)
     AWS_ENDPOINT_URL: str = Field(default="")
@@ -27,6 +28,7 @@ class Settings(BaseSettings):
     CAMUNDA_ENGINE_URL: str = Field(default="")
     CAMUNDA_USERNAME: str = Field(default="")
     CAMUNDA_PASSWORD: str = Field(default="")
+    CAMUNDA_API_TOKEN: str = Field(default="")
 
     BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = Field(default=[])
     LOG_LEVEL: int = Field(default=logging.INFO)
@@ -54,7 +56,6 @@ class Settings(BaseSettings):
     # RPA Settings
     MELIUS_RPA_URL: str = Field(default="")
     MELIUS_RPA_TOKEN: str = Field(default="")
-    MELIUS_RPA_CALLBACK_URL: str = Field(default="")
 
     @field_validator("POOL_SIZE", mode="before")
     @classmethod
