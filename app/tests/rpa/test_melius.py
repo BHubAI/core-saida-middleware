@@ -1,10 +1,14 @@
 from unittest.mock import MagicMock, patch
 
+import pytest
 from fastapi.testclient import TestClient
-from httpx import Request, Response, codes
-from models.rpa import RPAEventLog, RPAEventTypes
+from httpx import HTTPStatusError, Request, Response, codes
+from models.rpa import RPAEventLog, RPAEventTypes, RPASource
 from service.rpa import rpa_services
+from sqlalchemy import func
 from sqlmodel import select
+
+from app.schemas.rpa_schema import MeliusWebhookRequest
 
 
 def test_start_rpa_endpoint(client: TestClient, mocker, db_session):
@@ -41,13 +45,25 @@ def test_start_rpa_service(db_session, mocker):
 
 
 @patch("service.rpa.rpa_services.httpx.post")
-def test_melius_webhook(mock_post: MagicMock, client: TestClient, db_session):
+def test_handle_webhook_request(mock_post: MagicMock, db_session):
+    id_tarefa_cliente = "29c16b26-2213-11f0-a8ae-129143b339f3"
+    db_session.add(
+        RPAEventLog(
+            process_id=id_tarefa_cliente,
+            event_type=RPAEventTypes.START,
+            event_source=RPASource.MELIUS,
+            event_data={
+                "tipoTarefaRpa": "traDctf",
+                "tokenRetorno": "token",
+            },
+        )
+    )
     mock_post.return_value = Response(
         status_code=codes.NO_CONTENT, request=Request("POST", "http://localhost:8080/engine-rest/message")
     )
 
     webhook_request = {
-        "idTarefaCliente": "29c16b26-2213-11f0-a8ae-129143b339f3",
+        "idTarefaCliente": id_tarefa_cliente,
         "tipoTarefaRpa": "traDctf",
         "statusTarefaRpa": 1,
         "arquivosGerados": [
@@ -55,7 +71,7 @@ def test_melius_webhook(mock_post: MagicMock, client: TestClient, db_session):
             {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt"},
         ],
     }
-    response = client.post("/api/melius/webhook", json=webhook_request)
+    response = rpa_services.handle_webhook_request(MeliusWebhookRequest.model_validate(webhook_request), db_session)
 
     expected_camunda_request = {
         "messageName": "retorno:traDctf",
@@ -75,12 +91,22 @@ def test_melius_webhook(mock_post: MagicMock, client: TestClient, db_session):
         json=expected_camunda_request,
     )
 
-    assert response.status_code == codes.OK
-    assert response.json() == {"message": "Webhook Melius processado com sucesso"}
+    stmt = (
+        select(RPAEventLog)
+        .where(
+            RPAEventLog.event_type == RPAEventTypes.FINISH,
+            RPAEventLog.process_id == id_tarefa_cliente,
+        )
+        .with_only_columns(func.count())
+    )
+    rpa_event_log_count = db_session.execute(stmt).scalar()
+    assert rpa_event_log_count == 1
+
+    assert response == {"message": "Webhook Melius processado com sucesso"}
 
 
 @patch("service.rpa.rpa_services.httpx.post")
-def test_melius_webhook_error(mock_post: MagicMock, client: TestClient):
+def test_handle_melius_webhook_error(mock_post: MagicMock, db_session):
     mock_post.return_value = Response(
         status_code=codes.INTERNAL_SERVER_ERROR,
         request=Request("POST", "http://localhost:8080/engine-rest/message"),
@@ -95,7 +121,6 @@ def test_melius_webhook_error(mock_post: MagicMock, client: TestClient):
             {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt"},
         ],
     }
-    response = client.post("/api/melius/webhook", json=webhook_request)
 
-    assert response.status_code == codes.INTERNAL_SERVER_ERROR
-    assert response.json() == {"detail": "Erro ao processar Webhook Melius"}
+    with pytest.raises(HTTPStatusError):
+        rpa_services.handle_webhook_request(MeliusWebhookRequest.model_validate(webhook_request), db_session)

@@ -1,6 +1,5 @@
 from api.base.endpoints import BaseEndpoint
 from api.deps import DBSession, DDLogger
-from fastapi.responses import JSONResponse
 from schemas.rpa_schema import MeliusProcessRequest, MeliusWebhookRequest
 from service.rpa.rpa_services import handle_webhook_request, start_melius_rpa
 
@@ -23,11 +22,11 @@ class MeliusEndpoint(BaseEndpoint):
                 raise e
 
         @self.router.post("/webhook")
-        def melius_webhook(request: MeliusWebhookRequest, logger: DDLogger):
+        def melius_webhook(request: MeliusWebhookRequest, db_session: DBSession, logger: DDLogger):
             try:
                 logger.info(f"Received request with process_data: {request.model_dump()}")
-                response = handle_webhook_request(request)
+                response = handle_webhook_request(request, db_session)
                 return response
             except Exception as e:
                 logger.error(f"Erro ao processar Webhook Melius: {e}")
-                return JSONResponse(status_code=500, content={"detail": "Erro ao processar Webhook Melius"})
+                raise e

@@ -43,7 +43,7 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
         raise RPAException(str(e))
 
 
-def handle_webhook_request(request: MeliusWebhookRequest):
+def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession):
     """
     Webhook para receber update dos RPAs da Melius.
 
@@ -77,5 +77,14 @@ def handle_webhook_request(request: MeliusWebhookRequest):
         json=camunda_request.model_dump(by_alias=True),
     )
     response.raise_for_status()
+
+    db_session.add(
+        RPAEventLog(
+            process_id=request.id_tarefa_cliente,
+            event_type=RPAEventTypes.FINISH,
+            event_source=RPASource.MELIUS,
+            event_data={},
+        )
+    )
 
     return {"message": "Webhook Melius processado com sucesso"}
