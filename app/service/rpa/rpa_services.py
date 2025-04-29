@@ -71,9 +71,10 @@ async def handle_webhook_request(request: MeliusWebhookRequest):
         process_instance_id=request.id_tarefa_cliente,
     )
 
-    await httpx.post(
+    response = httpx.post(
         f"{settings.CAMUNDA_ENGINE_URL}/message",
         json=camunda_request.model_dump(by_alias=True),
     )
+    response.raise_for_status()
 
-    return {"message": "Melius webhook received"}
+    return {"message": "Webhook Melius processado com sucesso"}
