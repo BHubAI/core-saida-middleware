@@ -92,7 +92,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
             #     "type": "string",
             # },
             "competencia": {
-                "value": datetime.datetime.now().strftime("%Y-%m"),
+                "value": datetime.datetime.now().strftime("%m/%Y"),
                 "type": "string",
             },
             # "cliente_possui_movimento_folha": {
