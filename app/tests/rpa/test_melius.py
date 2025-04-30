@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from core.config import settings
 from fastapi.testclient import TestClient
 from httpx import HTTPStatusError, Request, Response, codes
 from models.rpa import RPAEventLog, RPAEventTypes, RPASource
@@ -45,6 +46,8 @@ def test_start_rpa_service(db_session, mocker):
 
 @patch("service.rpa.rpa_services.httpx.post")
 def test_handle_webhook_request(mock_post: MagicMock, db_session):
+    settings.CAMUNDA_USERNAME = "admin"
+    settings.CAMUNDA_PASSWORD = "admin"
     id_tarefa_cliente = "29c16b26-2213-11f0-a8ae-129143b339f3"
     db_session.add(
         RPAEventLog(
@@ -93,7 +96,7 @@ def test_handle_webhook_request(mock_post: MagicMock, db_session):
     mock_post.assert_called_once_with(
         "http://localhost:8080/engine-rest/message",
         json=expected_camunda_request,
-        headers={"Content-Type": "application/json", "Authorization": "Basic <camunda-username>:<camunda-password>"},
+        headers={"Content-Type": "application/json", "Authorization": "Basic admin:admin"},
     )
 
     stmt = (
