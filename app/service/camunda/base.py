@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 import requests
@@ -54,9 +55,10 @@ class CamundaProcessStarter:
                 self.db_session.rollback()
                 self.db_session.add(
                     ProcessEventLog(
-                        process_key=self.process_key,
+                        process_id=self.process_key,
                         event_type=ProcessEventTypes.START_ERROR,
                         event_data=customer_data,
+                        created_at=datetime.datetime.now(),
                     )
                 )
 
@@ -70,7 +72,16 @@ class CamundaProcessStarter:
         return self.process_key
 
     def audit_event(self, process_id: str, event_type: ProcessEventTypes, process_data: dict):
-        pass
+        """Audit event"""
+        self.db_session.add(
+            ProcessEventLog(
+                process_id=process_id,
+                event_type=event_type,
+                event_data=process_data,
+                created_at=datetime.datetime.now(),
+            )
+        )
+        self.db_session.commit()
 
     def start_dev_process(self, customer_data: dict):
         """Start a process in Camunda dev environment"""

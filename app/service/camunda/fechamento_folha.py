@@ -7,7 +7,6 @@ from io import StringIO
 
 from core.config import settings
 from helpers import s3_utils
-from models.camunda import ProcessEventLog, ProcessEventTypes
 from service.camunda.base import CamundaProcessStarter
 
 
@@ -20,10 +19,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
-        return (
-            customer_data["Status de fechamento"] != "Pendente"
-            and customer_data["Tipo de mov de folha"] != "sem movimento"
-        )
+        return customer_data["Status de fechamento"] != "Pendente"
 
     def mes_ano_ptbr(self):
         meses = {
@@ -57,18 +53,6 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         if customer_data["útil ou corrido"] == "útil":
             return "dia útil"
         return "NTH_WORK_DAY"
-
-    def audit_event(self, process_id: str, event_type: ProcessEventTypes, process_data: dict):
-        """Audit event"""
-        self.db_session.add(
-            ProcessEventLog(
-                process_id=process_id,
-                event_type=event_type,
-                event_data=process_data,
-                created_at=datetime.datetime.now(),
-            )
-        )
-        self.db_session.commit()
 
     def get_process_content(self):
         """Load process content from s3 object"""
@@ -139,8 +123,12 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "value": self.mes_ano_ptbr(),
                 "type": "string",
             },
-            "cnpj_escritor": {
+            "cnpj_escritorio": {
                 "value": customer_data["cnpj_escritorio"],
+                "type": "string",
+            },
+            "erp_operado": {
+                "value": customer_data["ERP_OPERADO"],
                 "type": "string",
             },
             "upload_url": {

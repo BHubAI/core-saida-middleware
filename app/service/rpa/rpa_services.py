@@ -36,7 +36,7 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
 
         db_session.add(
             RPAEventLog(
-                process_id=process_data.get("process_id", ""),
+                process_id=process_data.get("idTarefaCliente", ""),
                 event_type=RPAEventTypes.START,
                 event_source=RPASource.MELIUS,
                 event_data=process_data,
