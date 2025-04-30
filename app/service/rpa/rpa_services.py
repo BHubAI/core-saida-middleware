@@ -7,9 +7,8 @@ from core.config import settings
 from core.exceptions import RPAException
 from core.logging import setup_logger
 from models.rpa import RPAEventLog, RPAEventTypes, RPASource
+from schemas.rpa_schema import CamundaRequest, MeliusWebhookRequest
 from sqlalchemy import select
-
-from app.schemas.rpa_schema import CamundaRequest, MeliusWebhookRequest
 
 
 logger = setup_logger(__name__)

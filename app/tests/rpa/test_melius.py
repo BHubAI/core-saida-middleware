@@ -4,11 +4,10 @@ import pytest
 from fastapi.testclient import TestClient
 from httpx import HTTPStatusError, Request, Response, codes
 from models.rpa import RPAEventLog, RPAEventTypes, RPASource
+from schemas.rpa_schema import MeliusWebhookRequest
 from service.rpa import rpa_services
 from sqlalchemy import func
 from sqlmodel import select
-
-from app.schemas.rpa_schema import MeliusWebhookRequest
 
 
 def test_start_rpa_endpoint(client: TestClient, mocker, db_session):
