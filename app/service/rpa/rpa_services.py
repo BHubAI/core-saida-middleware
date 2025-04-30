@@ -78,7 +78,7 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
         RPAEventLog.process_id == request.id_tarefa_cliente,
         RPAEventLog.event_data.op("->>")("tokenRetorno") == request.token_retorno,  # type: ignore
     )
-    rpa_event_logs = db_session.exec(stmt).scalars().all()
+    rpa_event_logs = db_session.execute(stmt).scalars().all()
 
     if len(rpa_event_logs) != 1 or rpa_event_logs[0].event_type != RPAEventTypes.START:
         raise RPAException("Token inválido ou tarefa não encontrada")
