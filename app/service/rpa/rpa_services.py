@@ -59,17 +59,16 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
     - Envia o payload para o Camunda
     """
     stmt = select(RPAEventLog).where(
-        RPAEventLog.event_type == RPAEventTypes.START,
         RPAEventLog.process_id == request.id_tarefa_cliente,
         RPAEventLog.event_data.op("->>")("tokenRetorno") == request.token_retorno,
     )
-    rpa_event_log_start = db_session.execute(stmt).scalar_one_or_none()
+    rpa_event_logs = db_session.execute(stmt).scalars().all()
 
-    if not rpa_event_log_start:
+    if len(rpa_event_logs) != 1 or rpa_event_logs[0].event_type != RPAEventTypes.START:
         raise RPAException("Token inválido ou tarefa não encontrada")
 
     camunda_request = CamundaRequest(
-        message_name=f"retorno:{rpa_event_log_start.event_data['tipoTarefaRpa']}",
+        message_name=f"retorno:{rpa_event_logs[0].event_data['tipoTarefaRpa']}",
         process_variables={
             "statusTarefaRpa": {
                 "value": request.status_tarefa_rpa,
@@ -99,7 +98,7 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
             process_id=request.id_tarefa_cliente,
             event_type=RPAEventTypes.FINISH,
             event_source=RPASource.MELIUS,
-            event_data=rpa_event_log_start.event_data,
+            event_data=rpa_event_logs[0].event_data,
         )
     )
 
