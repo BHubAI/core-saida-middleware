@@ -74,15 +74,18 @@ def test_handle_webhook_request(mock_post: MagicMock, db_session):
     response = rpa_services.handle_webhook_request(MeliusWebhookRequest.model_validate(webhook_request), db_session)
 
     expected_camunda_request = {
-        "messageName": "retorno:traDctf",
+        "messageName": "result_rpa_traDctf",
         "processVariables": {
-            "statusTarefaRpa": {"value": 1, "type": "integer"},
-            "arquivosGerados": {
-                "value": [
-                    {"url": "http://example.com/file1.txt", "nomeArquivo": "file1.txt"},
-                    {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt"},
-                ]
-            },
+            "result_rpa_traDctf": {
+                "value": {
+                    "status_tarefa_rpa": 1,
+                    "mensagem_retorno": None,
+                    "arquivos_gerados": [
+                        {"url": "http://example.com/file1.txt", "nome_arquivo": "file1.txt"},
+                        {"url": "http://example.com/file2.txt", "nome_arquivo": "file2.txt"},
+                    ],
+                }
+            }
         },
         "processInstanceId": "29c16b26-2213-11f0-a8ae-129143b339f3",
     }
