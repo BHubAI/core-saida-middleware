@@ -248,7 +248,7 @@ def test_handle_melius_webhook_post_error(mock_post: MagicMock, db_session):
     stmt = (
         select(RPAEventLog)
         .where(
-            RPAEventLog.event_type == RPAEventTypes.ERROR,
+            RPAEventLog.event_type == RPAEventTypes.FINISH_WITH_ERROR,
             RPAEventLog.process_id == id_tarefa_cliente,
             RPAEventLog.event_data.op("->>")("tokenRetorno") == "token",
         )

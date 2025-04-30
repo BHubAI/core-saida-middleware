@@ -105,7 +105,7 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
         db_session.add(
             RPAEventLog(
                 process_id=request.id_tarefa_cliente,
-                event_type=RPAEventTypes.ERROR,
+                event_type=RPAEventTypes.FINISH_WITH_ERROR,
                 event_source=RPASource.MELIUS,
                 event_data={
                     "error": str(e),

@@ -8,7 +8,7 @@ from sqlmodel import JSON, Column, DateTime, Field
 class RPAEventTypes(str, Enum):
     START = "start"
     FINISH = "finish"
-    ERROR = "error"
+    FINISH_WITH_ERROR = "finish_with_error"
 
 
 class RPASource(str, Enum):
