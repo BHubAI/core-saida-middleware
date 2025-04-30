@@ -94,22 +94,18 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
         process_instance_id=request.id_tarefa_cliente,
     )
 
-    try:
-        _make_camunda_request(
-            f"{settings.CAMUNDA_ENGINE_URL}/message",
-            camunda_request.model_dump(by_alias=True),
-        )
+    _make_camunda_request(
+        f"{settings.CAMUNDA_ENGINE_URL}/message",
+        camunda_request.model_dump(by_alias=True),
+    )
 
-        db_session.add(
-            RPAEventLog(
-                process_id=request.id_tarefa_cliente,
-                event_type=RPAEventTypes.FINISH,
-                event_source=RPASource.MELIUS,
-                event_data=rpa_event_logs[0].event_data,
-            )
+    db_session.add(
+        RPAEventLog(
+            process_id=request.id_tarefa_cliente,
+            event_type=RPAEventTypes.FINISH,
+            event_source=RPASource.MELIUS,
+            event_data=rpa_event_logs[0].event_data,
         )
-    except Exception as e:
-        # TODO: Adicionar error handling e notificação no Datadog/Slack
-        logger.error(f"Error sending message to Camunda Melius Webhook: {e}")
+    )
 
     return {"message": "Webhook Melius processado com sucesso"}
