@@ -1,11 +1,15 @@
 import secrets
 
+import httpx
 import requests
 from api.deps import DBSession
 from core.config import settings
 from core.exceptions import RPAException
 from core.logging import setup_logger
 from models.rpa import RPAEventLog, RPAEventTypes, RPASource
+from sqlalchemy import select
+
+from app.schemas.rpa_schema import CamundaRequest, MeliusWebhookRequest
 
 
 logger = setup_logger(__name__)
@@ -44,3 +48,58 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
     except Exception as e:
         logger.error(f"Error starting Melius RPA: {e}")
         raise RPAException(str(e))
+
+
+def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession):
+    """
+    Webhook para receber update dos RPAs da Melius.
+
+    - Recebe o payload do webhook
+    - Processa o payload
+    - Envia o payload para o Camunda
+    """
+    stmt = select(RPAEventLog).where(
+        RPAEventLog.process_id == request.id_tarefa_cliente,
+        RPAEventLog.event_data.op("->>")("tokenRetorno") == request.token_retorno,
+    )
+    rpa_event_logs = db_session.execute(stmt).scalars().all()
+
+    if len(rpa_event_logs) != 1 or rpa_event_logs[0].event_type != RPAEventTypes.START:
+        raise RPAException("Token inválido ou tarefa não encontrada")
+
+    camunda_request = CamundaRequest(
+        message_name=f"retorno:{rpa_event_logs[0].event_data['tipoTarefaRpa']}",
+        process_variables={
+            "statusTarefaRpa": {
+                "value": request.status_tarefa_rpa,
+                "type": "integer",
+            },
+            "arquivosGerados": {
+                "value": [
+                    {
+                        "url": arquivo.url,
+                        "nomeArquivo": arquivo.nome_arquivo,
+                    }
+                    for arquivo in request.arquivos_gerados
+                ],
+            },
+        },
+        process_instance_id=request.id_tarefa_cliente,
+    )
+
+    response = httpx.post(
+        f"{settings.CAMUNDA_ENGINE_URL}/message",
+        json=camunda_request.model_dump(by_alias=True),
+    )
+    response.raise_for_status()
+
+    db_session.add(
+        RPAEventLog(
+            process_id=request.id_tarefa_cliente,
+            event_type=RPAEventTypes.FINISH,
+            event_source=RPASource.MELIUS,
+            event_data=rpa_event_logs[0].event_data,
+        )
+    )
+
+    return {"message": "Webhook Melius processado com sucesso"}

@@ -51,11 +51,13 @@ jobs:
 
       - name: Run unit tests
         env:
+          CAMUNDA_ENGINE_URL: http://localhost:8080/engine-rest
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: test_db
           PYTHONPATH: ${{ github.workspace }}/app:${{ github.workspace }}
+
         run: |
           poetry run pytest --cov=app --cov-report=xml:coverage.xml
