@@ -109,6 +109,7 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
                 event_data={
                     "error": str(e),
                     "camunda_request": camunda_request.model_dump(by_alias=True),
+                    **rpa_event_logs[0].event_data,
                 },
             )
         )
