@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     AWS_REGION: str = Field(default="us-east-1")
     AWS_ACCESS_KEY_ID: str = Field(default="")
     AWS_SECRET_ACCESS_KEY: str = Field(default="")
+    CORE_SAIDA_BUCKET_NAME: str = Field(default="core-saida")
 
     # Camunda settings
     CAMUNDA_ENGINE_URL: str = Field(default="")

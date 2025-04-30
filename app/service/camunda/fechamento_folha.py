@@ -9,7 +9,9 @@ from core.config import settings
 from helpers import s3_utils
 from models.camunda import ProcessEventLog, ProcessEventTypes
 from service.camunda.base import CamundaProcessStarter
-from service.camunda.enums import RegimeTributario
+
+
+# from service.camunda.enums import RegimeTributario
 
 
 class FechamentoFolha3Process(CamundaProcessStarter):
@@ -18,7 +20,10 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
-        return True
+        return (
+            customer_data["Status de fechamento"] != "Pendente"
+            and customer_data["Tipo de mov de folha"] != "sem movimento"
+        )
 
     def mes_ano_ptbr(self):
         meses = {
@@ -67,7 +72,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
 
     def get_process_content(self):
         """Load process content from s3 object"""
-        process_data = s3_utils.get_object("core-saida", self.s3_file_path)
+        process_data = s3_utils.get_object(settings.CORE_SAIDA_BUCKET_NAME, self.s3_file_path)
 
         csv_file = StringIO(process_data)
         csv_reader = csv.DictReader(csv_file)
@@ -84,12 +89,12 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                         "cnpj": customer_data["cnpj"],
                         "origem": customer_data["origin_cnpj"],
                         "customer_profile": customer_data["customer_profile"],
-                        "company_tax_type": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
+                        # "company_tax_type": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
                         "codigo_dominio": customer_data["COD Dominio"],
-                        "operational_status": {
-                            "hr_pay_day": self.get_hr_pay_day(customer_data),
-                            "hr_pay_day_type": self.get_hr_pay_day_type(customer_data),
-                        },
+                        # "operational_status": {
+                        #     "hr_pay_day": self.get_hr_pay_day(customer_data),
+                        #     "hr_pay_day_type": self.get_hr_pay_day_type(customer_data),
+                        # },
                     }
                 ),
                 "type": "json",
@@ -98,40 +103,44 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "value": customer_data["ID"],
                 "type": "string",
             },
-            "regime_tributario": {
-                "value": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
-                "type": "string",
-            },
+            # "regime_tributario": {
+            #     "value": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
+            #     "type": "string",
+            # },
             "competencia": {
                 "value": datetime.datetime.now().strftime("%Y-%m"),
                 "type": "string",
             },
-            "cliente_possui_movimento_folha": {
-                "value": True if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
-                "type": "boolean",
-            },
-            "cliente_elegibilidade": {
-                "value": "valido" if self.is_eligible(customer_data) else "invalido",
-                "type": "string",
-            },
-            "assignee": {
-                "value": "rafael.nunes@bhub.ai",  # TODO: customer_data["Analista_dp"],
-                "type": "string",
-            },
-            "tem_movimento_folha": {
-                "value": True if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
-                "type": "boolean",
-            },
-            "tem_contribuicao": {
-                "value": "no",
-                "type": "string",
-            },
+            # "cliente_possui_movimento_folha": {
+            #     "value": True if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
+            #     "type": "boolean",
+            # },
+            # "cliente_elegibilidade": {
+            #     "value": "valido" if self.is_eligible(customer_data) else "invalido",
+            #     "type": "string",
+            # },
+            # "assignee": {
+            #     "value": "rafael.nunes@bhub.ai",  # TODO: customer_data["Analista_dp"],
+            #     "type": "string",
+            # },
+            # "tem_movimento_folha": {
+            #     "value": True if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
+            #     "type": "boolean",
+            # },
+            # "tem_contribuicao": {
+            #     "value": "no",
+            #     "type": "string",
+            # },
             "envia_notificacao": {
                 "value": "no" if customer_data["customer_profile"] == "FAMILY_5" else "yes",
                 "type": "string",
             },
             "mes_ano": {
                 "value": self.mes_ano_ptbr(),
+                "type": "string",
+            },
+            "cnpj_escritor": {
+                "value": customer_data["cnpj_escritorio"],
                 "type": "string",
             },
             "upload_url": {
