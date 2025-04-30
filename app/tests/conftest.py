@@ -9,6 +9,11 @@ from app.db.session import get_session
 from app.models.base import BaseModel
 
 
+@pytest.fixture(autouse=True)
+def override_envvars(monkeypatch):
+    monkeypatch.setenv("CAMUNDA_ENGINE_URL", "http://localhost:8080/engine-rest")
+
+
 def create_test_database():
     # Connect to default postgres database to create test database
     default_db_url = settings.postgres_url.replace(settings.POSTGRES_DB, "postgres")

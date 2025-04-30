@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
@@ -30,7 +30,7 @@ class ArquivoGerado(BaseModel):
 class MeliusWebhookRequest(BaseModel):
     id_tarefa_cliente: str
     status_tarefa_rpa: StatusTarefaRpa
-    mensagem_retorno: Optional[str] = None
+    mensagem_retorno: str | None = None
     arquivos_gerados: list[ArquivoGerado] | None = None
     token_retorno: str
 
