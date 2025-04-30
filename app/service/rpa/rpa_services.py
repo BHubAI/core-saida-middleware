@@ -1,7 +1,6 @@
 import secrets
 
 import httpx
-import requests
 from api.deps import DBSession
 from core.config import settings
 from core.exceptions import RPAException
@@ -24,8 +23,7 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
         process_data["tokenRetorno"] = secrets.token_hex(16)
         url = f"{settings.MELIUS_RPA_URL}/envia-tarefa-rpa"
 
-        logger.info(f"Sending request to Melius RPA with url: {url} and process data: {process_data}")
-        response = requests.post(url, json=process_data)
+        response = httpx.post(url, json=process_data)
         response.raise_for_status()
 
         logger.info(f"Response from Melius RPA: {response.json()}")
@@ -44,6 +42,9 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
         )
 
         return content
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Error starting Melius RPA: {e} | Content: {e.response.content}")
+        raise RPAException(str(e))
     except Exception as e:
         logger.error(f"Error starting Melius RPA: {e}")
         raise RPAException(str(e))
@@ -101,7 +102,7 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
             camunda_request.model_dump(by_alias=True),
         )
     except httpx.HTTPStatusError as e:
-        logger.error(f"Error sending request to Camunda: {e}")
+        logger.error(f"Error sending request to Camunda: {e} | Content: {e.response.content}")
         db_session.add(
             RPAEventLog(
                 process_id=request.id_tarefa_cliente,
@@ -109,6 +110,7 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
                 event_source=RPASource.MELIUS,
                 event_data={
                     "error": str(e),
+                    "response_content": e.response.content.decode(),
                     "camunda_request": camunda_request.model_dump(by_alias=True),
                     **rpa_event_logs[0].event_data,
                 },
