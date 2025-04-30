@@ -94,18 +94,32 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
         process_instance_id=request.id_tarefa_cliente,
     )
 
-    _make_camunda_request(
-        f"{settings.CAMUNDA_ENGINE_URL}/message",
-        camunda_request.model_dump(by_alias=True),
-    )
-
-    db_session.add(
-        RPAEventLog(
-            process_id=request.id_tarefa_cliente,
-            event_type=RPAEventTypes.FINISH,
-            event_source=RPASource.MELIUS,
-            event_data=rpa_event_logs[0].event_data,
+    try:
+        _make_camunda_request(
+            f"{settings.CAMUNDA_ENGINE_URL}/message",
+            camunda_request.model_dump(by_alias=True),
         )
-    )
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Error sending request to Camunda: {e}")
+        db_session.add(
+            RPAEventLog(
+                process_id=request.id_tarefa_cliente,
+                event_type=RPAEventTypes.ERROR,
+                event_source=RPASource.MELIUS,
+                event_data={
+                    "error": str(e),
+                    "camunda_request": camunda_request.model_dump(by_alias=True),
+                },
+            )
+        )
+    else:
+        db_session.add(
+            RPAEventLog(
+                process_id=request.id_tarefa_cliente,
+                event_type=RPAEventTypes.FINISH,
+                event_source=RPASource.MELIUS,
+                event_data=rpa_event_logs[0].event_data,
+            )
+        )
 
-    return {"message": "Webhook Melius processado com sucesso"}
+    return {"message": "Webhook Melius recebido com sucesso"}
