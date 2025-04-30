@@ -74,9 +74,9 @@ def test_handle_webhook_request(mock_post: MagicMock, db_session):
     response = rpa_services.handle_webhook_request(MeliusWebhookRequest.model_validate(webhook_request), db_session)
 
     expected_camunda_request = {
-        "messageName": "retorno_rpa_traDctf",
+        "messageName": "result_rpa_traDctf",
         "processVariables": {
-            "retorno_rpa_traDctf": {
+            "result_rpa_traDctf": {
                 "value": {
                     "status_tarefa_rpa": 1,
                     "mensagem_retorno": None,
