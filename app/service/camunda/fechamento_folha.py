@@ -19,7 +19,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
-        return customer_data["Status de fechamento"] != "Pendente"
+        return True
 
     def mes_ano_ptbr(self):
         meses = {
