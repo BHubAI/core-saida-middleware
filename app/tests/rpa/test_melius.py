@@ -12,40 +12,28 @@ from sqlmodel import select
 
 
 def test_start_rpa_endpoint(client: TestClient, mocker, db_session):
-    mock_post = mocker.patch("service.rpa.rpa_services.requests.post")
+    mock_post = mocker.patch("service.rpa.rpa_services.httpx.post")
     mock_post.return_value.json.return_value = {"message": "RPA started"}
     mock_post.return_value.status_code = codes.OK
 
-    process_data = {"process_id": "1234567890"}
+    process_data = {"idTarefaCliente": "1234567890"}
 
     response = client.post("/api/melius/start-rpa", json={"process_data": process_data})
+    db_session.commit()
 
     assert response.status_code == codes.OK
     assert response.json() == {"message": "RPA started"}
-
-
-def test_start_rpa_service(db_session, mocker):
-    mock_post = mocker.patch("service.rpa.rpa_services.requests.post")
-    mock_post.return_value.json.return_value = {"message": "RPA started"}
-    mock_post.return_value.status_code = codes.OK
-
-    process_data = {"process_id": "1234567890"}
-
-    response = rpa_services.start_melius_rpa(process_data, db_session)
-    db_session.commit()
-
-    assert response == {"message": "RPA started"}
 
     stmt = select(RPAEventLog)
     rpa_event_log = db_session.execute(stmt).scalar_one()
 
     assert rpa_event_log is not None
-    assert rpa_event_log.process_id == process_data["process_id"]
+    assert rpa_event_log.process_id == process_data["idTarefaCliente"]
     assert rpa_event_log.event_type == RPAEventTypes.START
 
 
 @patch("service.rpa.rpa_services.httpx.post")
-def test_handle_webhook_request(mock_post: MagicMock, db_session):
+def test_handle_webhook_request(mock_post: MagicMock, db_session, override_envvars):
     settings.CAMUNDA_USERNAME = "admin"
     settings.CAMUNDA_PASSWORD = "admin"
     id_tarefa_cliente = "29c16b26-2213-11f0-a8ae-129143b339f3"
@@ -94,7 +82,7 @@ def test_handle_webhook_request(mock_post: MagicMock, db_session):
     }
 
     mock_post.assert_called_once_with(
-        "http://localhost:8080/engine-rest/message",
+        f"{settings.CAMUNDA_ENGINE_URL}/message",
         json=expected_camunda_request,
         headers={"Content-Type": "application/json", "Authorization": "Basic admin:admin"},
     )

@@ -57,10 +57,10 @@ def _make_camunda_request(url, params: dict):
 
     if settings.ENV == "prod":
         headers["X-API-Key"] = f"{settings.CAMUNDA_API_TOKEN}"
+        response = httpx.post(url, json=params, headers=headers)
     else:
-        headers["Authorization"] = f"Basic {settings.CAMUNDA_USERNAME}:{settings.CAMUNDA_PASSWORD}"
-
-    response = httpx.post(url, json=params, headers=headers)
+        auth = httpx.BasicAuth(settings.CAMUNDA_USERNAME, settings.CAMUNDA_PASSWORD)
+        response = httpx.post(url, json=params, headers=headers, auth=auth)
 
     response.raise_for_status()
 
