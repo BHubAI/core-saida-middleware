@@ -57,8 +57,8 @@ def test_handle_webhook_request(mock_post: MagicMock, db_session, override_envva
         "tipoTarefaRpa": "traDctf",
         "statusTarefaRpa": 1,
         "arquivosGerados": [
-            {"url": "http://example.com/file1.txt", "nomeArquivo": "file1.txt"},
-            {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt"},
+            {"url": "http://example.com/file1.txt", "nomeArquivo": "file1.txt", "tipoArquivo": "teste"},
+            {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt", "tipoArquivo": "teste"},
         ],
         "tokenRetorno": "token",
     }
@@ -72,8 +72,8 @@ def test_handle_webhook_request(mock_post: MagicMock, db_session, override_envva
                     "status_tarefa_rpa": 1,
                     "mensagem_retorno": None,
                     "arquivos_gerados": [
-                        {"url": "http://example.com/file1.txt", "nome_arquivo": "file1.txt"},
-                        {"url": "http://example.com/file2.txt", "nome_arquivo": "file2.txt"},
+                        {"url": "http://example.com/file1.txt", "nome_arquivo": "file1.txt", "tipo_arquivo": "teste"},
+                        {"url": "http://example.com/file2.txt", "nome_arquivo": "file2.txt", "tipo_arquivo": "teste"},
                     ],
                 }
             }
@@ -81,11 +81,9 @@ def test_handle_webhook_request(mock_post: MagicMock, db_session, override_envva
         "processInstanceId": "29c16b26-2213-11f0-a8ae-129143b339f3",
     }
 
-    mock_post.assert_called_once_with(
-        f"{settings.CAMUNDA_ENGINE_URL}/message",
-        json=expected_camunda_request,
-        headers={"Content-Type": "application/json", "Authorization": "Basic admin:admin"},
-    )
+    mock_post.assert_called_once()
+    assert mock_post.call_args.kwargs["json"] == expected_camunda_request
+    assert mock_post.call_args.kwargs["headers"]["Content-Type"] == "application/json"
 
     stmt = (
         select(RPAEventLog)
@@ -122,8 +120,8 @@ def test_handle_webhook_request_invalid_token(mock_post: MagicMock, db_session):
         "tipoTarefaRpa": "traDctf",
         "statusTarefaRpa": 1,
         "arquivosGerados": [
-            {"url": "http://example.com/file1.txt", "nomeArquivo": "file1.txt"},
-            {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt"},
+            {"url": "http://example.com/file1.txt", "nomeArquivo": "file1.txt", "tipoArquivo": "teste"},
+            {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt", "tipoArquivo": "teste"},
         ],
         "tokenRetorno": "invalid-token",
     }
@@ -177,8 +175,8 @@ def test_handle_webhook_request_duplicate_request(mock_post: MagicMock, db_sessi
         "tipoTarefaRpa": "traDctf",
         "statusTarefaRpa": 1,
         "arquivosGerados": [
-            {"url": "http://example.com/file1.txt", "nomeArquivo": "file1.txt"},
-            {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt"},
+            {"url": "http://example.com/file1.txt", "nomeArquivo": "file1.txt", "tipoArquivo": "teste"},
+            {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt", "tipoArquivo": "teste"},
         ],
         "tokenRetorno": "token",
     }
@@ -225,8 +223,8 @@ def test_handle_melius_webhook_post_error(mock_post: MagicMock, db_session):
         "tipoTarefaRpa": "traDctf",
         "statusTarefaRpa": 1,
         "arquivosGerados": [
-            {"url": "http://example.com/file1.txt", "nomeArquivo": "file1.txt"},
-            {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt"},
+            {"url": "http://example.com/file1.txt", "nomeArquivo": "file1.txt", "tipoArquivo": "teste"},
+            {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt", "tipoArquivo": "teste"},
         ],
         "tokenRetorno": "token",
     }

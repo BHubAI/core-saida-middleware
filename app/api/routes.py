@@ -29,7 +29,6 @@ def register_routes(app: FastAPI):
 
     @app.get("/health")
     def health_check(logger: DDLogger) -> JSONResponse:
-        logger.info("Health check requested")
         return JSONResponse(status_code=status.HTTP_200_OK, content={"status": "ok"})
 
     for router in api_routers.get_routers():
