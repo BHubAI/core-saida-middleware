@@ -19,8 +19,13 @@ class StatusTarefaRpa(IntEnum):
 
 
 class ArquivoGerado(BaseModel):
+    """
+    Arquivo gerado pelo RPA
+    """
+
     url: str
     nome_arquivo: str
+    tipo_arquivo: str
 
     model_config = ConfigDict(
         alias_generator=to_camel,

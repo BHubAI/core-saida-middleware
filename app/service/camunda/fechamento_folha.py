@@ -15,6 +15,7 @@ from service.camunda.base import CamundaProcessStarter
 
 class FechamentoFolha3Process(CamundaProcessStarter):
     def __init__(self, *args, **kwargs):
+        # super().__init__("mensagem_folha_dp_3", *args, **kwargs)
         super().__init__("fechamento_folha_dp_3", *args, **kwargs)
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
@@ -40,6 +41,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         return f"{meses[datetime.datetime.now().month]}/{datetime.datetime.now().year}"
 
     def get_upload_url(self):
+        # TODO: Mover para variaveis de ambiente
         if settings.ENV == "dev":
             return "https://task-manager.cexp-dev.bhub.ai/upload-url"
         return "https://task-manager.bhub.ai/upload-url"
@@ -92,7 +94,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
             #     "type": "string",
             # },
             "competencia": {
-                "value": datetime.datetime.now().strftime("%m/%Y"),
+                "value": "04/2025",
                 "type": "string",
             },
             # "cliente_possui_movimento_folha": {

@@ -10,19 +10,19 @@ from service import camunda
 
 
 class CamundaProcessStarter:
-    """Base class for Camunda processes"""
+    """Base class para processos Camunda"""
 
     def __init__(self, process_key: str, db_session: DBSession, logger: logging.Logger):
         self.process_key = process_key
         self.db_session = db_session
         self.logger = logger
 
-    def is_eligible(self):
-        """Check if current customer is eligible to start this process"""
+    def is_eligible(self, customer_data: dict):
+        """Verifica se o cliente atual é elegível para iniciar este processo"""
         return True
 
     def get_process_content(self):
-        """Get the process content"""
+        """Retorna o conteúdo do processo"""
         raise NotImplementedError("This method should be implemented to return the process content")
 
     def start_process(self):
@@ -41,10 +41,8 @@ class CamundaProcessStarter:
                     continue
 
                 if current_env == "prod":
-                    self.logger.info(f"Starting process {self.process_key} in PRODUCTION")
                     self.start_production_process(customer_data)
                 else:
-                    self.logger.info(f"Starting process {self.process_key} in {current_env}")
                     self.start_dev_process(customer_data)
 
                 self.db_session.commit()
@@ -62,13 +60,10 @@ class CamundaProcessStarter:
                     )
                 )
 
-    def start_production_process(self, customer_data: dict):
-        """Start a process in production"""
-        self.logger.info(f"Starting process {self.process_key} in PRODUCTION")
-
-    def get_business_key(self):
-        """Get the business key for the process"""
-        # TODO: Implement this to get a real business key
+    def get_business_key(self, customer_data: dict):
+        """Usa o process_key como business key por padrão.
+        Sobreescreva este método caso queira criar um business key único para seu processo.
+        """
         return self.process_key
 
     def audit_event(self, process_id: str, event_type: ProcessEventTypes, process_data: dict):
@@ -83,8 +78,38 @@ class CamundaProcessStarter:
         )
         self.db_session.commit()
 
+    def start_production_process(self, customer_data: dict):
+        """Inicia o processo em PROD"""
+        url = f"{settings.CAMUNDA_ENGINE_URL}/process-definition/key/{self.process_key}/start"
+        headers = {
+            "Content-Type": "application/json",
+            "x-api-key": settings.CAMUNDA_API_TOKEN,
+        }
+        variables = self.get_process_variables(customer_data)
+
+        payload = {
+            "variables": variables,
+            "businessKey": self.get_business_key(customer_data),
+        }
+
+        response = requests.post(
+            url,
+            headers=headers,
+            json=payload,
+        )
+
+        response.raise_for_status()
+
+        process_id = response.json()["id"]
+
+        self.audit_event(process_id, ProcessEventTypes.START, payload)
+
+        self.logger.info(
+            f"Process {self.process_key} started in Camunda PRODUCTION for customer {customer_data['cnpj']}"
+        )
+
     def start_dev_process(self, customer_data: dict):
-        """Start a process in Camunda dev environment"""
+        """Inicia o processo em DEV"""
         url = f"{settings.CAMUNDA_ENGINE_URL}/process-definition/key/{self.process_key}/start"
         headers = {
             "Content-Type": "application/json",
@@ -93,7 +118,7 @@ class CamundaProcessStarter:
 
         payload = {
             "variables": variables,
-            "businessKey": self.get_business_key(),
+            "businessKey": self.get_business_key(customer_data),
         }
 
         response = requests.post(
@@ -112,13 +137,13 @@ class CamundaProcessStarter:
         self.logger.info(f"Process {self.process_key} started in Camunda DEV for customer {customer_data['cnpj']}")
 
     def get_process_variables(self, data: dict):
-        """Get process variables"""
+        """Retorna as variaveis do processo"""
         self.logger.info(f"Empty process variables for {self.process_key}")
         return {}
 
 
 async def start_process(process_key: str, db_session: DBSession, logger: logging.Logger):
-    """Start process"""
+    """Inicia um processo por sua chave"""
     logger.info(f"Starting process with key: {process_key}")
     try:
         if not hasattr(camunda, process_key):
