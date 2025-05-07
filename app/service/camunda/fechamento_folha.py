@@ -15,8 +15,8 @@ from service.camunda.base import CamundaProcessStarter
 
 class FechamentoFolha3Process(CamundaProcessStarter):
     def __init__(self, *args, **kwargs):
-        # super().__init__("mensagem_folha_dp_3", *args, **kwargs)
-        super().__init__("fechamento_folha_dp_3", *args, **kwargs)
+        super().__init__("mensagem_folha_dp_3", *args, **kwargs)
+        # super().__init__("fechamento_folha_dp_3", *args, **kwargs)
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
@@ -135,6 +135,10 @@ class FechamentoFolha3Process(CamundaProcessStarter):
             },
             "upload_url": {
                 "value": self.get_upload_url(),
+                "type": "string",
+            },
+            "gdocs_path": {
+                "value": "/Reports de fechamento/2025/DP/Impostos/Abril/",
                 "type": "string",
             },
             "start_rpa_url": {

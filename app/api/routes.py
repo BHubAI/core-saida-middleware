@@ -1,3 +1,4 @@
+from api.audit.rpa_audit import RPAAuditoriaEndpoint
 from api.base.endpoints import BaseEndpoint
 from api.camunda.process_starter import ProcessMessageEndpoint
 from api.camunda.side_effect import SideEffectEndpoint
@@ -13,6 +14,7 @@ class Routers:
             SideEffectEndpoint(),
             ProcessMessageEndpoint(),
             MeliusEndpoint(),
+            RPAAuditoriaEndpoint(),
         ]
 
     def get_routers(self):
