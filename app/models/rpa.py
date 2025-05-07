@@ -26,3 +26,15 @@ class RPAEventLog(BaseModel, table=True):
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False), default_factory=datetime.utcnow
     )
+
+    def model_dump_as_csv(self):
+        return (
+            self.process_id,
+            self.event_type.value,
+            self.event_source.value,
+            self.event_data["baseOrigem"],
+            self.event_data["nomeCliente"],
+            self.event_data["tipoTarefaRpa"],
+            self.event_data["idTarefaRPA"],
+            {self.created_at.strftime("%Y-%m-%d %H:%M:%S")},
+        )
