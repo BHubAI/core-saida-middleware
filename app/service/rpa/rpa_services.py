@@ -116,6 +116,21 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
                 },
             )
         )
+    except Exception as e:
+        logger.error(f"Error processing Melius request: {e} ")
+        db_session.add(
+            RPAEventLog(
+                process_id=request.id_tarefa_cliente,
+                event_type=RPAEventTypes.FINISH_WITH_ERROR,
+                event_source=RPASource.MELIUS,
+                event_data={
+                    "error": str(e),
+                    "response_content": str(e),
+                    "camunda_request": camunda_request.model_dump(by_alias=True),
+                    **rpa_event_logs[0].event_data,
+                },
+            )
+        )
     else:
         db_session.add(
             RPAEventLog(
