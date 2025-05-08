@@ -28,13 +28,22 @@ class RPAEventLog(BaseModel, table=True):
     )
 
     def model_dump_as_csv(self):
-        return (
+        model_dump = [
             self.process_id,
             self.event_type.value,
             self.event_source.value,
-            self.event_data["baseOrigem"],
-            self.event_data["nomeCliente"],
-            self.event_data["tipoTarefaRpa"],
-            self.event_data["idTarefaRPA"],
-            {self.created_at.strftime("%Y-%m-%d %H:%M:%S")},
-        )
+        ]
+
+        if self.event_type == RPAEventTypes.FINISH_WITH_ERROR:
+            model_dump.append(self.event_data["error"])
+            model_dump.append(self.event_data.get("response_content", ""))
+        else:
+            model_dump.append(self.event_data["baseOrigem"])
+            model_dump.append(self.event_data["nomeCliente"])
+            model_dump.append(self.event_data["documentoCliente"])
+            model_dump.append(self.event_data["tipoTarefaRpa"])
+            model_dump.append(self.event_data["idTarefaRPA"])
+
+        model_dump.append(self.created_at.strftime("%Y-%m-%d %H:%M:%S"))
+
+        return model_dump
