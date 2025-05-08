@@ -44,9 +44,29 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
         return content
     except httpx.HTTPStatusError as e:
         logger.error(f"Error starting Melius RPA: {e} | Content: {e.response.content}")
+        db_session.add(
+            RPAEventLog(
+                process_id=process_data.get("idTarefaCliente", ""),
+                event_type=RPAEventTypes.START_ERROR,
+                event_source=RPASource.MELIUS,
+                event_data={
+                    "error": str(e),
+                    "response_content": e.response.content.decode(),
+                    "process_data_request": process_data,
+                },
+            )
+        )
         raise RPAException(str(e))
     except Exception as e:
         logger.error(f"Error starting Melius RPA: {e}")
+        db_session.add(
+            RPAEventLog(
+                process_id=process_data.get("idTarefaCliente", ""),
+                event_type=RPAEventTypes.START_ERROR,
+                event_source=RPASource.MELIUS,
+                event_data={"error": str(e), "process_data_request": process_data},
+            )
+        )
         raise RPAException(str(e))
 
 

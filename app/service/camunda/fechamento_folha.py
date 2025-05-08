@@ -15,14 +15,23 @@ from service.camunda.base import CamundaProcessStarter
 
 class FechamentoFolha3Process(CamundaProcessStarter):
     def __init__(self, *args, **kwargs):
-        super().__init__("mensagem_folha_dp_3", *args, **kwargs)
-        # super().__init__("fechamento_folha_dp_3", *args, **kwargs)
+        # super().__init__("mensagem_folha_dp_3", *args, **kwargs)
+        super().__init__("fechamento_folha_dp_3", *args, **kwargs)
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
         return True
 
-    def mes_ano_ptbr(self):
+    def ano_corrente(self):
+        return datetime.datetime.now().year
+
+    def get_mes_competencia(self):
+        """Se dia do mês menor que 10, retorna mês anterior, se maior ou igual a 10, retorna mês atual"""
+        if datetime.datetime.now().day < 10:
+            return datetime.datetime.now().month - 1
+        return datetime.datetime.now().month
+
+    def mes_corrente_ptbr(self):
         meses = {
             1: "Janeiro",
             2: "Fevereiro",
@@ -38,7 +47,11 @@ class FechamentoFolha3Process(CamundaProcessStarter):
             12: "Dezembro",
         }
 
-        return f"{meses[datetime.datetime.now().month]}/{datetime.datetime.now().year}"
+        mes_competencia = self.get_mes_competencia()
+        return meses[mes_competencia]
+
+    def mes_ano_ptbr(self):
+        return f"{self.mes_corrente_ptbr()}/{self.ano_corrente()}"
 
     def get_upload_url(self):
         # TODO: Mover para variaveis de ambiente
@@ -137,8 +150,8 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "value": self.get_upload_url(),
                 "type": "string",
             },
-            "gdocs_path": {
-                "value": "/Reports de fechamento/2025/DP/Impostos/Abril/",
+            "caminho_gdocs": {
+                "value": f"/Reports de fechamento/{self.ano_corrente()}/DP/Impostos/{self.mes_corrente_ptbr()}/",
                 "type": "string",
             },
             "start_rpa_url": {

@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 
+import httpx
 import pytest
 from core.config import settings
 from fastapi.testclient import TestClient
@@ -30,6 +31,55 @@ def test_start_rpa_endpoint(client: TestClient, mocker, db_session):
     assert rpa_event_log is not None
     assert rpa_event_log.process_id == process_data["idTarefaCliente"]
     assert rpa_event_log.event_type == RPAEventTypes.START
+
+
+@patch("service.rpa.rpa_services.httpx.post")
+def test_start_rpa_endpoint_error(mock_post, db_session, client: TestClient):
+    mock_response = MagicMock()
+    mock_response.status_code = codes.BAD_REQUEST
+    mock_response.content = b"400 Bad Request"
+    mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+        message="400 Bad Request", request=Request("POST", "http://test.com"), response=mock_response
+    )
+
+    mock_post.return_value = mock_response
+
+    process_data = {"idTarefaCliente": "1234567890"}
+    response = client.post("/api/melius/start-rpa", json={"process_data": process_data})
+    db_session.commit()
+
+    assert response.status_code == codes.INTERNAL_SERVER_ERROR
+    assert "400 Bad Request" in response.json()["detail"]
+
+    stmt = select(RPAEventLog)
+    rpa_event_log = db_session.execute(stmt).scalar_one()
+
+    assert rpa_event_log is not None
+    assert rpa_event_log.process_id == process_data["idTarefaCliente"]
+    assert rpa_event_log.event_type == RPAEventTypes.START_ERROR
+
+
+@patch("service.rpa.rpa_services.httpx.post")
+def test_start_rpa_generic_error(mock_post, db_session, client: TestClient):
+    mock_response = MagicMock()
+    mock_response.content = b"500 Generic Exception"
+    mock_response.raise_for_status.side_effect = Exception("Generic Exception")
+
+    mock_post.return_value = mock_response
+
+    process_data = {"idTarefaCliente": "1234567890"}
+    response = client.post("/api/melius/start-rpa", json={"process_data": process_data})
+    db_session.commit()
+
+    assert response.status_code == codes.INTERNAL_SERVER_ERROR
+    assert "Generic Exception" in response.json()["detail"]
+
+    stmt = select(RPAEventLog)
+    rpa_event_log = db_session.execute(stmt).scalar_one()
+
+    assert rpa_event_log is not None
+    assert rpa_event_log.process_id == process_data["idTarefaCliente"]
+    assert rpa_event_log.event_type == RPAEventTypes.START_ERROR
 
 
 @patch("service.rpa.rpa_services.httpx.post")
