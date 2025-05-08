@@ -77,7 +77,7 @@ def _make_camunda_request(url, params: dict):
         "Content-Type": "application/json",
     }
 
-    if settings.ENV == "prod":
+    if settings.ENV == "production":
         headers["X-API-Key"] = f"{settings.CAMUNDA_API_TOKEN}"
         response = httpx.post(url, json=params, headers=headers)
     else:
