@@ -27,3 +27,24 @@ class RPAEventLog(BaseModel, table=True):
     created_at: datetime = Field(
         sa_column=Column(DateTime(timezone=True), nullable=False), default_factory=datetime.utcnow
     )
+
+    def model_dump_as_csv(self):
+        model_dump = [
+            self.process_id,
+            self.event_type.value,
+            self.event_source.value,
+        ]
+
+        if self.event_type == RPAEventTypes.FINISH_WITH_ERROR:
+            model_dump.append(self.event_data["error"])
+            model_dump.append(self.event_data.get("response_content", ""))
+        else:
+            model_dump.append(self.event_data["baseOrigem"])
+            model_dump.append(self.event_data["nomeCliente"])
+            model_dump.append(self.event_data["documentoCliente"])
+            model_dump.append(self.event_data["tipoTarefaRpa"])
+            model_dump.append(self.event_data["idTarefaRPA"])
+
+        model_dump.append(self.created_at.strftime("%Y-%m-%d %H:%M:%S"))
+
+        return model_dump

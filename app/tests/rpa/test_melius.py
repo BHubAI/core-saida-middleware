@@ -1,3 +1,4 @@
+import datetime
 from unittest.mock import MagicMock, patch
 
 import httpx
@@ -162,6 +163,7 @@ def test_handle_webhook_request_invalid_token(mock_post: MagicMock, db_session):
                 "tipoTarefaRpa": "traDctf",
                 "tokenRetorno": "token",
             },
+            created_at=datetime.datetime.now(),
         )
     )
 
