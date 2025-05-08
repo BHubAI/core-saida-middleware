@@ -49,7 +49,7 @@ def get_rpa_errors(db_session: DBSession):
     event_logs = (
         db_session.query(RPAEventLog)
         .filter(RPAEventLog.created_at >= datetime.datetime.now() - datetime.timedelta(days=7))
-        .filter(RPAEventLog.event_type == RPAEventTypes.FINISH_WITH_ERROR)
+        .filter(RPAEventLog.event_type.in_([RPAEventTypes.START_ERROR, RPAEventTypes.FINISH_WITH_ERROR]))
         .order_by(RPAEventLog.created_at.desc())
         .all()
     )
