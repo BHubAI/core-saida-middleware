@@ -15,8 +15,8 @@ from service.camunda.base import CamundaProcessStarter
 
 class FechamentoFolha3Process(CamundaProcessStarter):
     def __init__(self, *args, **kwargs):
-        super().__init__("mensagem_folha_dp_3", *args, **kwargs)
-        # super().__init__("fechamento_folha_dp_3", *args, **kwargs)
+        # super().__init__("mensagem_folha_dp_3", *args, **kwargs)
+        super().__init__("fechamento_folha_dp_3", *args, **kwargs)
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
