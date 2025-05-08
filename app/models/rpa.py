@@ -38,6 +38,9 @@ class RPAEventLog(BaseModel, table=True):
         if self.event_type == RPAEventTypes.FINISH_WITH_ERROR:
             model_dump.append(self.event_data["error"])
             model_dump.append(self.event_data.get("response_content", ""))
+        elif self.event_type == RPAEventTypes.START_ERROR:
+            model_dump.append(self.event_data["error"])
+            model_dump.append(self.event_data.get("process_data_request", ""))
         else:
             model_dump.append(self.event_data["baseOrigem"])
             model_dump.append(self.event_data["nomeCliente"])
