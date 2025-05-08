@@ -40,12 +40,16 @@ class CamundaProcessStarter:
                     self.audit_event(customer_data["cnpj"], ProcessEventTypes.SKIPPED, {"message": skip_message})
                     continue
 
-                if current_env == "prod":
+                if current_env == "production":
                     self.start_production_process(customer_data)
                 else:
                     self.start_dev_process(customer_data)
 
                 self.db_session.commit()
+            except requests.HTTPError as e:
+                self.logger.error(
+                    f"Error starting process {self.process_key} for customer {customer_data['cnpj']}: {e} | {e.response.text} | Headers: {e.response.request.headers}"  # noqa: E501
+                )
             except Exception as e:
                 self.logger.error(
                     f"Error starting process {self.process_key} for customer {customer_data['cnpj']}: {e}"
@@ -83,7 +87,7 @@ class CamundaProcessStarter:
         url = f"{settings.CAMUNDA_ENGINE_URL}/process-definition/key/{self.process_key}/start"
         headers = {
             "Content-Type": "application/json",
-            "x-api-key": settings.CAMUNDA_API_TOKEN,
+            "X-API-Key": settings.CAMUNDA_API_TOKEN,
         }
         variables = self.get_process_variables(customer_data)
 
