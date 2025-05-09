@@ -17,7 +17,7 @@ RUN pip install "poetry>=2.0.1"
 # Copy poetry files first
 COPY pyproject.toml poetry.lock* /tmp/
 
-RUN poetry install --no-root $(test "${env:-dev}" != "prod" && echo "--with dev") \
+RUN poetry install --no-root $(test "${env:-dev}" != "production" && echo "--with dev") \
     && poetry run pip freeze > requirements.txt
 
 
