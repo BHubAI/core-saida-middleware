@@ -8,9 +8,7 @@ from io import StringIO
 from core.config import settings
 from helpers import s3_utils
 from service.camunda.base import CamundaProcessStarter
-
-
-# from service.camunda.enums import RegimeTributario
+from service.camunda.enums import RegimeTributario
 
 
 class FechamentoFolha3Process(CamundaProcessStarter):
@@ -88,12 +86,12 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                         "cnpj": customer_data["cnpj"],
                         "origem": customer_data["origin_cnpj"],
                         "customer_profile": customer_data["customer_profile"],
-                        # "company_tax_type": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
+                        "company_tax_type": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
                         "codigo_dominio": customer_data["COD Dominio"],
-                        # "operational_status": {
-                        #     "hr_pay_day": self.get_hr_pay_day(customer_data),
-                        #     "hr_pay_day_type": self.get_hr_pay_day_type(customer_data),
-                        # },
+                        "operational_status": {
+                            "hr_pay_day": self.get_hr_pay_day(customer_data),
+                            "hr_pay_day_type": self.get_hr_pay_day_type(customer_data),
+                        },
                     }
                 ),
                 "type": "json",
@@ -102,26 +100,26 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "value": customer_data["ID"],
                 "type": "string",
             },
-            # "regime_tributario": {
-            #     "value": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
-            #     "type": "string",
-            # },
+            "regime_tributario": {
+                "value": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
+                "type": "string",
+            },
             "competencia": {
                 "value": "04/2025",
                 "type": "string",
             },
-            # "cliente_possui_movimento_folha": {
-            #     "value": True if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
-            #     "type": "boolean",
-            # },
-            # "cliente_elegibilidade": {
-            #     "value": "valido" if self.is_eligible(customer_data) else "invalido",
-            #     "type": "string",
-            # },
-            # "assignee": {
-            #     "value": "rafael.nunes@bhub.ai",  # TODO: customer_data["Analista_dp"],
-            #     "type": "string",
-            # },
+            "cliente_possui_movimento_folha": {
+                "value": True if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
+                "type": "boolean",
+            },
+            "cliente_elegibilidade": {
+                "value": "valido" if self.is_eligible(customer_data) else "invalido",
+                "type": "string",
+            },
+            "assignee": {
+                "value": customer_data["Analista_dp"],
+                "type": "string",
+            },
             # "tem_movimento_folha": {
             #     "value": True if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
             #     "type": "boolean",
@@ -139,11 +137,11 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "cnpj_escritorio": {
-                "value": customer_data["cnpj_escritorio"],
+                "value": customer_data["CNPJ_procuração_federal"],
                 "type": "string",
             },
             "erp_operado": {
-                "value": customer_data["ERP_OPERADO"],
+                "value": customer_data["erp_operado"],
                 "type": "string",
             },
             "upload_url": {
