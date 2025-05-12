@@ -12,17 +12,11 @@ from service.camunda.enums import RegimeTributario
 
 
 class FechamentoFolha3Process(CamundaProcessStarter):
-    INCLUDED_CNPJS = [
-        "48814117000135",
-        "34293427000147",
-        "34309059000188",
-        "33627336000138",
-        "33345658000194",
-        "48994871000102",
-    ]
+    INCLUDED_CNPJS = ["15329825000121", "44655110000167", "12603959000109", "48749288000128", "30473147000160"]
 
     def __init__(self, *args, **kwargs):
-        super().__init__("tarefa_esocial_familia3", *args, **kwargs)
+        # super().__init__("tarefa_esocial_familia3", *args, **kwargs)
+        super().__init__("tarefa_fgts_familia3", *args, **kwargs)
         # super().__init__("fechamento_folha_dp_3", *args, **kwargs)
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
