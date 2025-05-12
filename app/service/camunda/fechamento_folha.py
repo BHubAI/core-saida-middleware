@@ -12,9 +12,18 @@ from service.camunda.enums import RegimeTributario
 
 
 class FechamentoFolha3Process(CamundaProcessStarter):
+    INCLUDED_CNPJS = [
+        "48814117000135",
+        "34293427000147",
+        "34309059000188",
+        "33627336000138",
+        "33345658000194",
+        "48994871000102",
+    ]
+
     def __init__(self, *args, **kwargs):
-        # super().__init__("mensagem_folha_dp_3", *args, **kwargs)
-        super().__init__("fechamento_folha_dp_3", *args, **kwargs)
+        super().__init__("tarefa_esocial_familia3", *args, **kwargs)
+        # super().__init__("fechamento_folha_dp_3", *args, **kwargs)
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
@@ -74,7 +83,8 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         csv_file = StringIO(process_data)
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
-            yield row
+            if row["cnpj"] in self.INCLUDED_CNPJS:
+                yield row
 
     def get_process_variables(self, customer_data: dict):
         return {
