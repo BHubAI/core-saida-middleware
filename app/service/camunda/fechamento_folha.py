@@ -13,13 +13,11 @@ from service.camunda.enums import RegimeTributario
 
 class FechamentoFolha3Process(CamundaProcessStarter):
     INCLUDED_CNPJS = [
-        "3982711500019004299047000159",
+        "39827115000190",
         "12453374000141",
-        "46284471000170",
         "35828673000119",
         "49764056000101",
         "50620489000172",
-        "51355571000180",
         "29567304000117",
         "38340695000123",
     ]
@@ -113,7 +111,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "regime_tributario": {
-                "value": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
+                "value": "SIMPLES NACIONAL",  # RegimeTributario.get_by_name(customer_data["company_tax_type"]),
                 "type": "string",
             },
             "competencia": {
@@ -129,7 +127,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "assignee": {
-                "value": customer_data["Analista_dp"],
+                "value": "",  # customer_data["analista responsável"],
                 "type": "string",
             },
             # "tem_movimento_folha": {
@@ -149,7 +147,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "cnpj_escritorio": {
-                "value": customer_data["CNPJ_procuração_federal"],
+                "value": customer_data["CNPJ DO ESCRITÓRIO (procuração)"],
                 "type": "string",
             },
             "erp_operado": {
