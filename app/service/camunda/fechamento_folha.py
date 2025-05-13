@@ -8,7 +8,9 @@ from io import StringIO
 from core.config import settings
 from helpers import s3_utils
 from service.camunda.base import CamundaProcessStarter
-from service.camunda.enums import RegimeTributario
+
+
+# from service.camunda.enums import RegimeTributario
 
 
 class FechamentoFolha3Process(CamundaProcessStarter):
@@ -96,7 +98,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                         "cnpj": customer_data["cnpj"],
                         "origem": customer_data["origin_cnpj"],
                         "customer_profile": customer_data["customer_profile"],
-                        "company_tax_type": RegimeTributario.get_by_name(customer_data["company_tax_type"]),
+                        "company_tax_type": "SIMPLES NACIONAL",  # RegimeTributario.get_by_name(customer_data["company_tax_type"]),  # noqa E501
                         "codigo_dominio": customer_data["COD Dominio"],
                         "operational_status": {
                             "hr_pay_day": self.get_hr_pay_day(customer_data),
@@ -119,7 +121,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "cliente_possui_movimento_folha": {
-                "value": True if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
+                "value": True,  # if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
                 "type": "boolean",
             },
             "cliente_elegibilidade": {
