@@ -15,14 +15,11 @@ from service.camunda.base import CamundaProcessStarter
 
 class FechamentoFolha3Process(CamundaProcessStarter):
     INCLUDED_CNPJS = [
-        "39827115000190",
         "12453374000141",
         "35828673000119",
         "49764056000101",
         "50620489000172",
         "29567304000117",
-        "38340695000123",
-        "43379065000100",
     ]
 
     def __init__(self, *args, **kwargs):
