@@ -22,6 +22,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         "50620489000172",
         "29567304000117",
         "38340695000123",
+        "43379065000100",
     ]
 
     def __init__(self, *args, **kwargs):
