@@ -100,10 +100,6 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                         "customer_profile": customer_data["customer_profile"],
                         "company_tax_type": "SIMPLES NACIONAL",  # RegimeTributario.get_by_name(customer_data["company_tax_type"]),  # noqa E501
                         "codigo_dominio": customer_data["COD Dominio"],
-                        "operational_status": {
-                            "hr_pay_day": self.get_hr_pay_day(customer_data),
-                            "hr_pay_day_type": self.get_hr_pay_day_type(customer_data),
-                        },
                     }
                 ),
                 "type": "json",
