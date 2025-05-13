@@ -15,20 +15,13 @@ from service.camunda.base import CamundaProcessStarter
 
 class FechamentoFolha3Process(CamundaProcessStarter):
     INCLUDED_CNPJS = [
-        "48786781000118",
-        "14394105000187",
-        "44655110000167",
-        "48814117000135",
-        "34309059000188",
-        "33345658000194",
-        "30473147000160",
-        "12603959000109",
-        "48994871000102",
-        "33627336000138",
-        "44968739000167",
-        "34293427000147",
-        "15329825000121",
-        "48749288000128",
+        "39827115000190",
+        "12453374000141",
+        "35828673000119",
+        "49764056000101",
+        "50620489000172",
+        "29567304000117",
+        "38340695000123",
     ]
 
     def __init__(self, *args, **kwargs):
@@ -93,8 +86,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
             if row["cnpj"] in self.INCLUDED_CNPJS:
-                continue
-            yield row
+                yield row
 
     def get_process_variables(self, customer_data: dict):
         return {
