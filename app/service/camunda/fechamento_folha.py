@@ -12,12 +12,20 @@ from service.camunda.enums import RegimeTributario
 
 
 class FechamentoFolha3Process(CamundaProcessStarter):
-    INCLUDED_CNPJS = ["15329825000121", "44655110000167", "12603959000109", "48749288000128", "30473147000160"]
+    INCLUDED_CNPJS = [
+        "3982711500019004299047000159",
+        "12453374000141",
+        "46284471000170",
+        "35828673000119",
+        "49764056000101",
+        "50620489000172",
+        "51355571000180",
+        "29567304000117",
+        "38340695000123",
+    ]
 
     def __init__(self, *args, **kwargs):
-        # super().__init__("tarefa_esocial_familia3", *args, **kwargs)
-        super().__init__("tarefa_fgts_familia3", *args, **kwargs)
-        # super().__init__("fechamento_folha_dp_3", *args, **kwargs)
+        super().__init__("fechamento_folha_dp_3", *args, **kwargs)
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
@@ -30,7 +38,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         """Se dia do mês menor que 10, retorna mês anterior, se maior ou igual a 10, retorna mês atual"""
         if datetime.datetime.now().day < 10:
             return datetime.datetime.now().month - 1
-        return datetime.datetime.now().month
+        return datetime.datetime.now().month - 1  # TODO fix this, forcando mes anterior porque rodamos com atraso
 
     def mes_corrente_ptbr(self):
         meses = {
