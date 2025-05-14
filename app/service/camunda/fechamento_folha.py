@@ -14,13 +14,7 @@ from service.camunda.base import CamundaProcessStarter
 
 
 class FechamentoFolha3Process(CamundaProcessStarter):
-    INCLUDED_CNPJS = [
-        "12453374000141",
-        "35828673000119",
-        "49764056000101",
-        "50620489000172",
-        "29567304000117",
-    ]
+    INCLUDED_CNPJS = ["41541243000114", "54284214000166"]
 
     def __init__(self, *args, **kwargs):
         super().__init__("fechamento_folha_dp_3", *args, **kwargs)
