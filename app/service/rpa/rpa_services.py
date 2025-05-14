@@ -28,7 +28,7 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
 
         logger.info(f"Response from Melius RPA: {response.json()}")
         content = response.json()
-        process_data["idRequisicaoRPA"] = content.get("idRequisicao", "")
+        process_data["idRequisicao"] = content.get("idRequisicao", "")
 
         db_session.add(
             RPAEventLog(
@@ -122,8 +122,8 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
                             "mensagem_retorno",
                             "arquivos_gerados",
                             "parametros_complementares",
-                        ]
-                    ),  # type: ignore
+                        ]  # type: ignore
+                    ),
                 },
             },
             process_instance_id=request.id_tarefa_cliente,

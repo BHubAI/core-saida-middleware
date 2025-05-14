@@ -46,7 +46,7 @@ class RPAEventLog(BaseModel, table=True):
             model_dump.append(self.event_data["nomeCliente"])
             model_dump.append(self.event_data["documentoCliente"])
             model_dump.append(self.event_data["tipoTarefaRpa"])
-            model_dump.append(self.event_data["idTarefaRPA"])
+            model_dump.append(self.event_data["idRequisicao"])
 
         model_dump.append(self.created_at.strftime("%Y-%m-%d %H:%M:%S"))
 
