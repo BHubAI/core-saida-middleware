@@ -154,11 +154,11 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "cnpj_escritorio": {
-                "value": customer_data["CNPJ DO ESCRITÓRIO (procuração)"],
+                "value": customer_data["CNPJ_procuração_federal"],
                 "type": "string",
             },
             "erp_operado": {
-                "value": customer_data["ERP_OPERADO"],
+                "value": customer_data["erp_operado"],
                 "type": "string",
             },
             "upload_url": {
