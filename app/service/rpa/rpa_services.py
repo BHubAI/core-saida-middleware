@@ -28,9 +28,7 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
 
         logger.info(f"Response from Melius RPA: {response.json()}")
         content = response.json()
-        id_task = content.get("idTarefaRpa")
-
-        process_data["idTarefaRPA"] = id_task
+        process_data["idRequisicaoRPA"] = content.get("idRequisicao", "")
 
         db_session.add(
             RPAEventLog(
