@@ -116,7 +116,14 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
             message_name=message_name,
             process_variables={
                 message_name: {
-                    "value": request.model_dump(include=["status_tarefa_rpa", "mensagem_retorno", "arquivos_gerados"]),  # type: ignore
+                    "value": request.model_dump(
+                        include=[
+                            "status_tarefa_rpa",
+                            "mensagem_retorno",
+                            "arquivos_gerados",
+                            "parametros_complementares",
+                        ]
+                    ),  # type: ignore
                 },
             },
             process_instance_id=request.id_tarefa_cliente,
