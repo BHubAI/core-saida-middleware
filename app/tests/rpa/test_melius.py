@@ -111,6 +111,9 @@ def test_handle_webhook_request(mock_post: MagicMock, db_session, override_envva
             {"url": "http://example.com/file1.txt", "nomeArquivo": "file1.txt", "tipoArquivo": "teste"},
             {"url": "http://example.com/file2.txt", "nomeArquivo": "file2.txt", "tipoArquivo": "teste"},
         ],
+        "parametrosComplementares": {
+            "semMovimento": True,
+        },
         "tokenRetorno": "token",
     }
     response = rpa_services.handle_webhook_request(MeliusWebhookRequest.model_validate(webhook_request), db_session)
@@ -126,6 +129,7 @@ def test_handle_webhook_request(mock_post: MagicMock, db_session, override_envva
                         {"url": "http://example.com/file1.txt", "nome_arquivo": "file1.txt", "tipo_arquivo": "teste"},
                         {"url": "http://example.com/file2.txt", "nome_arquivo": "file2.txt", "tipo_arquivo": "teste"},
                     ],
+                    "parametros_complementares": {"sem_movimento": True},
                 }
             }
         },

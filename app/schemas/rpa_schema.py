@@ -32,12 +32,21 @@ class ArquivoGerado(BaseModel):
     )
 
 
+class MeliusParametrosComplementares(BaseModel):
+    sem_movimento: bool = False
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+    )
+
+
 class MeliusWebhookRequest(BaseModel):
     id_tarefa_cliente: str
     status_tarefa_rpa: StatusTarefaRpa
     mensagem_retorno: str | None = None
     arquivos_gerados: list[ArquivoGerado] | None = None
     token_retorno: str
+    parametros_complementares: MeliusParametrosComplementares | None = None
 
     model_config = ConfigDict(
         alias_generator=to_camel,
