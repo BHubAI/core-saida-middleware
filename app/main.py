@@ -58,7 +58,6 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown events for the FastAPI application."""
 
     logger.info("Starting up...")
-    logger.info(f"MELIUS RPA URL {settings.MELIUS_RPA_URL} | TOKEN {settings.MELIUS_RPA_TOKEN}")
     add_postgresql_extension()
 
     yield

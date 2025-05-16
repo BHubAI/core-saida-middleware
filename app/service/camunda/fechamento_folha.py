@@ -93,8 +93,6 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         csv_file = StringIO(process_data)
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
-            if row["cnpj"] in self.INCLUDED_CNPJS or row["eSocial"] == "Não":
-                continue
             yield row
 
     def get_process_variables(self, customer_data: dict):
@@ -134,7 +132,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "assignee": {
-                "value": "",  # customer_data["analista responsável"],
+                "value": customer_data["analista responsável"],
                 "type": "string",
             },
             # "tem_movimento_folha": {
