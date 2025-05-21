@@ -1,10 +1,11 @@
 import logging
 from typing import Annotated, Optional
 
-from core.logging import setup_logger
-from db.session import get_session
 from fastapi import Depends
 from sqlmodel import Session
+
+from app.core.logging import setup_logger
+from app.db.session import get_session
 
 
 def get_logger(name: Optional[str] = None) -> logging.Logger:

@@ -2,7 +2,8 @@ from functools import lru_cache
 from typing import Optional
 
 import boto3
-from core.config import settings
+
+from app.core.config import settings
 
 
 @lru_cache(maxsize=1)

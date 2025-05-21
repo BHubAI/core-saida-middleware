@@ -2,8 +2,8 @@ import csv
 import datetime
 from io import StringIO
 
-from api.deps import DBSession
-from models.rpa import RPAEventLog, RPAEventTypes
+from app.api.deps import DBSession
+from app.models.rpa import RPAEventLog, RPAEventTypes
 
 
 def _to_csv(data: list[list[str]]) -> str:

@@ -1,9 +1,10 @@
 import logging
 
-from api.base.endpoints import BaseEndpoint
-from api.deps import DBSession
 from fastapi.responses import JSONResponse
-from schemas.camunda_schema import Event
+
+from app.api.base.endpoints import BaseEndpoint
+from app.api.deps import DBSession
+from app.schemas.camunda_schema import Event
 
 
 logger = logging.getLogger(__name__)
