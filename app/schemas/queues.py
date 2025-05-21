@@ -1,6 +1,8 @@
-from typing import Any, Optional
+from typing import Any, List, Optional
 from uuid import UUID
 
+from models.queue import Queue
+from models.queue_item import QueueItem, RPAStatus
 from pydantic import BaseModel
 
 
@@ -16,3 +18,26 @@ class QueueItemOut(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class NoItemsAvaiable(BaseModel):
+    message: str = "No items avaiable at the moment"
+
+
+class AvaiableItemResponse(BaseModel):
+    item: QueueItem
+
+
+class AvaiableItems(BaseModel):
+    items: List[QueueItem]
+
+
+class QueueCreatedResponse(BaseModel):
+    status: str = "Queue created"
+    queue_info: Queue
+
+
+class ItemAddedToQueue(BaseModel):
+    status: str = "Item added successfully"
+    item_status: RPAStatus = QueueItem.status
+    priority: int = QueueItem.priority

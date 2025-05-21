@@ -3,7 +3,8 @@ from api.base.endpoints import BaseEndpoint
 from api.camunda.process_starter import ProcessMessageEndpoint
 from api.camunda.side_effect import SideEffectEndpoint
 from api.deps import DDLogger
-from api.rpa.bhub import BHubQueuesEndpoint
+from api.rpa.bhub import BHubLogsEndpoint, BHubQueuesEndpoint
+from api.rpa.bhub_websocket import BHubWebSocket
 from api.rpa.melius import MeliusEndpoint
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse, PlainTextResponse
@@ -16,6 +17,8 @@ class Routers:
             ProcessMessageEndpoint(),
             MeliusEndpoint(),
             BHubQueuesEndpoint(),
+            BHubLogsEndpoint(),
+            BHubWebSocket(),
             RPAAuditoriaEndpoint(),
         ]
 
