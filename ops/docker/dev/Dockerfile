@@ -20,6 +20,6 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 WORKDIR /app
 COPY . /bhub/app/
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/bhub/app
 
 EXPOSE 8000
