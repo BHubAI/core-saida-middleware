@@ -58,28 +58,28 @@ build-ecr:
 	@echo "building docker image...."
 	docker build --platform linux/amd64 \
 		--build-arg ENV_FILE=./ops/docker/prod/env \
-		-t core-saida/orchestrator \
+		-t core-saida/middleware \
 		-f ./ops/docker/prod/Dockerfile .
 
 push-ecr:
 	@echo "pushing to ECR...."
 	aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $(AWS_ACCOUNT_ID).dkr.ecr.us-east-1.amazonaws.com
-	docker tag core-saida/orchestrator:latest $(AWS_ACCOUNT_ID).dkr.ecr.us-east-1.amazonaws.com/core-saida/orchestrator:latest
-	docker push $(AWS_ACCOUNT_ID).dkr.ecr.us-east-1.amazonaws.com/core-saida/orchestrator:latest
+	docker tag core-saida/middleware:latest $(AWS_ACCOUNT_ID).dkr.ecr.us-east-1.amazonaws.com/core-saida/middleware:latest
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.us-east-1.amazonaws.com/core-saida/middleware:latest
 
 # Local container commands
 run-local:
 	@echo "running container locally...."
 	docker run -d \
-		--name core-saida-orchestrator \
+		--name core-saida-middleware \
 		-p 8000:8000 \
 		--env-file ./ops/docker/prod/env \
-		core-saida/orchestrator
+		core-saida/middleware
 
 stop-local:
 	@echo "stopping local container...."
-	docker stop core-saida-orchestrator
-	docker rm core-saida-orchestrator
+	docker stop core-saida-middleware
+	docker rm core-saida-middleware
 
 
 bash:
