@@ -3,14 +3,15 @@ from unittest.mock import MagicMock, patch
 
 import httpx
 import pytest
-from core.config import settings
 from fastapi.testclient import TestClient
 from httpx import Request, Response, codes
-from models.rpa import RPAEventLog, RPAEventTypes, RPASource
-from schemas.rpa_schema import MeliusWebhookRequest
-from service.rpa import rpa_services
 from sqlalchemy import func
 from sqlmodel import select
+
+from app.core.config import settings
+from app.models.rpa import RPAEventLog, RPAEventTypes, RPASource
+from app.schemas.rpa_schema import MeliusWebhookRequest
+from app.service.rpa import rpa_services
 
 
 def test_start_rpa_endpoint(client: TestClient, mocker, db_session):

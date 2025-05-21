@@ -18,7 +18,7 @@ COPY --from=base /tmp/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 WORKDIR /app
-COPY . /app/
+COPY . /bhub/app/
 
 ENV PYTHONPATH=/app
 

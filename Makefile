@@ -49,11 +49,6 @@ mypy:
 	@echo "running mypy...."
 	docker compose exec $(BACKEND_CONTAINER_NAME) mypy app/
 
-# database
-init-db: alembic-init alembic-migrate
-	@echo "initializing database...."
-	docker compose exec $(BACKEND_CONTAINER_NAME) python3 app/db/init_db.py
-
 hooks: check
 	@echo "installing pre-commit hooks...."
 	pre-commit install

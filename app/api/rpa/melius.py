@@ -1,7 +1,7 @@
-from api.base.endpoints import BaseEndpoint
-from api.deps import DBSession, DDLogger
-from schemas.rpa_schema import MeliusProcessRequest, MeliusWebhookRequest
-from service.rpa.rpa_services import handle_webhook_request, start_melius_rpa
+from app.api.base.endpoints import BaseEndpoint
+from app.api.deps import DBSession, DDLogger
+from app.schemas.rpa_schema import MeliusProcessRequest, MeliusWebhookRequest
+from app.service.rpa.rpa_services import handle_webhook_request, start_melius_rpa
 
 
 ROUTE_PREFIX = "/api/melius"

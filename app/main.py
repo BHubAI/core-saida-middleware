@@ -1,16 +1,21 @@
 import asyncio
 from contextlib import asynccontextmanager
 
-from api import routes
-from core.config import settings
-from core.exceptions import CoreSaidaOrchestratorException, ObjectNotFound, RPAException
-from core.logging_config import configure_logging, get_logger
-from db.session import add_postgresql_extension
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from queues.subscribers.process_starter_subscriber import ProcessStarterSubscriber
+
+from app.api import routes
+from app.core.config import settings
+from app.core.exceptions import (
+    CoreSaidaOrchestratorException,
+    ObjectNotFound,
+    RPAException,
+)
+from app.core.logging_config import configure_logging, get_logger
+from app.db.session import add_postgresql_extension
+from app.queues.subscribers.process_starter_subscriber import ProcessStarterSubscriber
 
 
 # Configure logging
