@@ -41,3 +41,9 @@ class ItemAddedToQueue(BaseModel):
     status: str = "Item added successfully"
     item_status: RPAStatus = QueueItem.status
     priority: int = QueueItem.priority
+
+
+class QueueStatusResponse(BaseModel):
+    queue_name: str
+    is_active: bool
+    message: str

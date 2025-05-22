@@ -4,7 +4,7 @@ from uuid import UUID
 
 from api.base.endpoints import BaseEndpoint
 from api.deps import DBSession
-from fastapi import Request
+from fastapi import HTTPException, Request
 from schemas.queues import (
     AvaiableItems,
     ItemAddedToQueue,
@@ -12,6 +12,7 @@ from schemas.queues import (
     QueueCreatedResponse,
     QueueItemCreate,
     QueueItemOut,
+    QueueStatusResponse,
 )
 from service.rpa.queue_services import QueueService
 
@@ -38,13 +39,26 @@ class BHubQueuesEndpoint(BaseEndpoint):
             )
 
         @self.router.get("/queues/{queue_name}/items")
-        def get_items(queue_name: str, db: DBSession):
+        def get_pending_items(queue_name: str, db: DBSession):
             items = QueueService.get_pending_items(queue_name, db)
 
             if not items:
                 return NoItemsAvaiable()
 
             return AvaiableItems(items=items)
+
+        @self.router.put("/queues/{queue_name}/toggle", response_model=QueueStatusResponse)
+        def toggle_queue_status(queue_name: str, db: DBSession):
+            queue = QueueService.toggle_queue_status(queue_name, db)
+
+            if queue is None:
+                raise HTTPException(status_code=404, detail="Fila não encontrada")
+
+            return QueueStatusResponse(
+                queue_name=queue.name,
+                is_active=queue.is_active,
+                message=f"Fila {'ativada' if queue.is_active else 'pausada'} com sucesso.",
+            )
 
         # Moved to Websocket
         @self.router.get("/queues/{queue_name}/next", response_model=QueueItemOut)

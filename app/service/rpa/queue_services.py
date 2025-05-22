@@ -52,24 +52,27 @@ class QueueService:
     @staticmethod
     def get_next_item(queue_name: str, worker_id: str, db: Session):
         queue = db.query(Queue).filter_by(name=queue_name).first()
+
         if not queue:
-            raise HTTPException(status_code=404, detail="Queue not found")
+            raise Exception(f"Fila '{queue_name}' não encontrada")
+
+        if not queue.is_active:
+            raise Exception(f"Fila '{queue_name}' está pausada")
+
         item = (
             db.query(QueueItem)
-            .filter_by(queue_id=queue.id, status="pending", locked_by=None)
+            .filter_by(queue_id=queue.id, status="pending")
             .order_by(QueueItem.priority.desc(), QueueItem.created_at)
             .with_for_update(skip_locked=True)
             .first()
         )
-        if not item:
-            return None
 
-        item.status = "running"
-        item.locked_by = worker_id
-        item.locked_at = datetime.utcnow()
-        item.updated_at = datetime.utcnow()
-        db.commit()
-        db.refresh(item)
+        if item:
+            item.status = "in_progress"
+            item.locked_by = worker_id
+            db.commit()
+            db.refresh(item)
+
         return item
 
     @staticmethod
@@ -96,3 +99,16 @@ class QueueService:
             item.locked_by = None
             item.locked_at = None
         db.commit()
+
+    @staticmethod
+    def toggle_queue_status(queue_name: str, db: Session):
+        queue = db.query(Queue).filter_by(name=queue_name).first()
+
+        if not queue:
+            return None
+
+        queue.is_active = not queue.is_active
+        db.commit()
+        db.refresh(queue)
+
+        return queue
