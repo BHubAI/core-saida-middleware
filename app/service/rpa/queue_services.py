@@ -80,7 +80,6 @@ class QueueService:
         item.status = "success"
         item.updated_at = datetime.utcnow()
         db.commit()
-        return {"status": "ok"}
 
     @staticmethod
     def mark_fail(item_id: UUID, error: str, db: Session):
