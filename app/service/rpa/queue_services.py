@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import HTTPException
 from models import Queue, QueueItem
-from schemas.queues import QueueItemCreate
+from schemas.queues import QueueItemCreate, RPAStatus
 from sqlalchemy.orm import Session
 
 
@@ -43,7 +43,7 @@ class QueueService:
             raise HTTPException(status_code=404, detail="Queue not found")
         items = (
             db.query(QueueItem)
-            .filter_by(queue_id=queue.id, status="pending")
+            .filter_by(queue_id=queue.id, status=RPAStatus.PENDING)
             .order_by(QueueItem.priority.desc(), QueueItem.created_at)
             .all()
         )
@@ -68,7 +68,7 @@ class QueueService:
         )
 
         if item:
-            item.status = "in_progress"
+            item.status = RPAStatus.RUNNING
             item.locked_by = worker_id
             db.commit()
             db.refresh(item)
@@ -80,7 +80,7 @@ class QueueService:
         item = db.query(QueueItem).filter_by(id=item_id).first()
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
-        item.status = "success"
+        item.status = RPAStatus.SUCCESS
         item.updated_at = datetime.utcnow()
         db.commit()
 
@@ -93,9 +93,9 @@ class QueueService:
         item.error = error
         item.updated_at = datetime.utcnow()
         if item.attempts >= item.max_attempts:
-            item.status = "failed"
+            item.status = RPAStatus.FAILED
         else:
-            item.status = "pending"
+            item.status = RPAStatus.PENDING
             item.locked_by = None
             item.locked_at = None
         db.commit()

@@ -101,6 +101,6 @@ class BHubLogsEndpoint(BaseEndpoint):
         @self.router.get("/logs/formatted/{item_id}")
         def get_formatted_logs(item_id: str):
             return [
-                f"{log['task_id']} {log['level']} {log['timestamp']} {log['message']}"
+                f"[{log['task_id']}] [{log['level']}] [{log['timestamp']}] {log['message']}"
                 for log in logs_by_task.get(item_id, [])
             ]
