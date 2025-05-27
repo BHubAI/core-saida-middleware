@@ -1,7 +1,6 @@
 import json
 
 from api.base.endpoints import BaseEndpoint
-from api.deps import get_session
 from fastapi import WebSocket, WebSocketDisconnect
 from helpers.websocket_utils import (
     ACTION_REGISTRY,
@@ -21,8 +20,6 @@ class BHubWebSocket(BaseEndpoint):
         @self.router.websocket("/worker/{queue_name}")
         async def worker_ws(websocket: WebSocket, queue_name: str):
             await websocket.accept()
-            session_gen = get_session()
-            db = next(session_gen)
 
             try:
                 while True:
@@ -37,7 +34,7 @@ class BHubWebSocket(BaseEndpoint):
                         continue
 
                     try:
-                        context = WebSocketContext(websocket, data, db, self.manager)
+                        context = WebSocketContext(websocket, data, self.manager)
                         await action.execute(context)
                     except Exception as e:
                         await websocket.send_json({"error": str(e)})
@@ -45,8 +42,3 @@ class BHubWebSocket(BaseEndpoint):
             except WebSocketDisconnect:
                 worker_id = data.get("worker_id", "unknown")
                 await self.manager.disconnect(worker_id)
-            finally:
-                try:
-                    next(session_gen)
-                except StopIteration:
-                    pass

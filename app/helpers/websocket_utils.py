@@ -11,6 +11,7 @@ from service.rpa.queue_services import QueueService
 class WebSocketConnectionManager:
     def __init__(self):
         self.active_connections: Dict[str, WebSocket] = {}
+        self.queue_service: QueueService = QueueService()
 
     async def connect(self, worker_id: str, websocket: WebSocket):
         self.active_connections[worker_id] = websocket
@@ -20,25 +21,25 @@ class WebSocketConnectionManager:
         if websocket and websocket.client_state.value != 3:  # 3 = CLOSED
             await websocket.close()
 
-    def get_next_item(self, queue_name: str, worker_id: str, db):
-        item = QueueService.get_next_item(queue_name, worker_id, db)
+    def get_next_item(self, queue_name: str, worker_id: str):
+        item = self.queue_service.get_next_item(queue_name, worker_id)
 
         if item is None:
             return NoItemsAvaiable()
 
         return AvaiableItemResponse(item=item)
 
-    def mark_success(self, item_id: UUID, db):
+    def mark_success(self, item_id: UUID):
         try:
-            QueueService.mark_success(item_id, db)
+            self.queue_service.mark_success(item_id)
         except Exception as e:
             raise e
         response = WebsocketSuccessResponse(item_id=str(item_id))
         return response.model_dump(mode="json")
 
-    def mark_fail(self, item_id: UUID, error: str, db):
+    def mark_fail(self, item_id: UUID, error: str):
         try:
-            QueueService.mark_fail(item_id, error, db)
+            self.queue_service.mark_fail(item_id, error)
         except Exception as e:
             raise e
         response = WebsocketFailResponse(item_id=str(item_id))
@@ -46,10 +47,9 @@ class WebSocketConnectionManager:
 
 
 class WebSocketContext:
-    def __init__(self, websocket: WebSocket, data: dict, db, manager: WebSocketConnectionManager):
+    def __init__(self, websocket: WebSocket, data: dict, manager: WebSocketConnectionManager):
         self.websocket = websocket
         self.data = data
-        self.db = db
         self.manager = manager
 
     @property
@@ -71,20 +71,20 @@ class WebSocketContext:
 
 class WebSocketAction(ABC):
     @abstractmethod
-    async def execute(self, websocket: WebSocket, data: dict, db, manager):
+    async def execute(self, websocket: WebSocket, data: dict, manager: WebSocketConnectionManager):
         pass
 
 
 class GetNextItemAction(WebSocketAction):
     async def execute(self, context: WebSocketContext):
-        item = context.manager.get_next_item(context.queue_name, context.worker_id, context.db)
+        item = context.manager.get_next_item(context.queue_name, context.worker_id)
         await context.websocket.send_json(item.model_dump(mode="json"))
 
 
 class MarkSuccessAction(WebSocketAction):
     async def execute(self, context: WebSocketContext):
         item_id = context.item_id
-        result = context.manager.mark_success(item_id, context.db)
+        result = context.manager.mark_success(item_id)
         await context.websocket.send_json(result)
 
 
@@ -92,7 +92,7 @@ class MarkFailAction(WebSocketAction):
     async def execute(self, context: WebSocketContext):
         item_id = context.item_id
         error_msg = context.error_msg
-        result = context.manager.mark_fail(item_id, error_msg, context.db)
+        result = context.manager.mark_fail(item_id, error_msg)
         await context.websocket.send_json(result)
 
 
