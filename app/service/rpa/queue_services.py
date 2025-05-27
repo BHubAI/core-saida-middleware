@@ -1,5 +1,4 @@
 from datetime import datetime
-from uuid import UUID
 
 from api.deps import DBSession, get_session
 from fastapi import HTTPException
@@ -53,10 +52,22 @@ class QueueService:
         )
         return items
 
+    def get_retired_items(self, queue_name=None):
+        query = self.db.query(QueueItem).filter_by(status=RPAStatus.RETIRED)
+
+        if queue_name:
+            queue = self.db.query(Queue).filter_by(name=queue_name.strip()).first()
+            if not queue:
+                raise HTTPException(status_code=404, detail="Queue not found")
+            query = query.filter(QueueItem.queue_id == queue.id)
+
+        items = query.order_by(QueueItem.priority.desc(), QueueItem.created_at).all()
+        return items
+
     def get_next_item(self, queue_name: str, worker_id: str):
         queue = self.db.query(Queue).filter_by(name=queue_name).first()
         if not queue:
-            raise Exception(f"Fila '{queue_name}' não encontrada")
+            raise HTTPException(status_code=404, detail="Queue not found")
 
         if not queue.is_active:
             raise Exception(f"Fila '{queue_name}' está pausada")
@@ -77,25 +88,31 @@ class QueueService:
 
         return item
 
-    def mark_success(self, item_id: UUID):
-        item = self.db.query(QueueItem).filter_by(id=item_id).first()
+    def mark_success(self, data: dict):
+        item = self.db.query(QueueItem).filter_by(id=data["item"]["id"]).first()
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
         item.status = RPAStatus.SUCCESS
         item.updated_at = datetime.utcnow()
+        item.started_at = data["started_at"]
+        item.finished_at = data["finished_at"]
         self.db.commit()
 
-    def mark_fail(self, item_id: UUID, error: str):
-        item = self.db.query(QueueItem).filter_by(id=item_id).first()
+    def mark_fail(self, data: dict):
+        item = self.db.query(QueueItem).filter_by(id=data["item"]["id"]).first()
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
 
         item.attempts += 1
-        item.error = error
+        item.error = data["stderr"]
         item.updated_at = datetime.utcnow()
+        item.started_at = data["started_at"]
+        item.finished_at = data["finished_at"]
 
         if item.attempts >= item.max_attempts:
             item.status = RPAStatus.FAILED
+        if data["exception_type"] == "BusinessException":
+            item.status = RPAStatus.RETIRED
         else:
             item.status = RPAStatus.PENDING
             item.locked_by = None
@@ -106,7 +123,7 @@ class QueueService:
     def toggle_queue_status(self, queue_name: str):
         queue = self.db.query(Queue).filter_by(name=queue_name).first()
         if not queue:
-            return None
+            raise HTTPException(status_code=404, detail="Queue not found")
 
         queue.is_active = not queue.is_active
         self.db.commit()

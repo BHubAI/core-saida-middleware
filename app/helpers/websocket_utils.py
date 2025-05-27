@@ -19,6 +19,7 @@ class WebSocketConnectionManager:
     async def disconnect(self, worker_id: str):
         websocket = self.active_connections.pop(worker_id, None)
         if websocket and websocket.client_state.value != 3:  # 3 = CLOSED
+            print(f"Closing connection with: {worker_id}")
             await websocket.close()
 
     def get_next_item(self, queue_name: str, worker_id: str):
@@ -37,12 +38,12 @@ class WebSocketConnectionManager:
         response = WebsocketSuccessResponse(item_id=str(item_id))
         return response.model_dump(mode="json")
 
-    def mark_fail(self, item_id: UUID, error: str):
+    def mark_fail(self, data):
         try:
-            self.queue_service.mark_fail(item_id, error)
+            self.queue_service.mark_fail(data)
         except Exception as e:
             raise e
-        response = WebsocketFailResponse(item_id=str(item_id))
+        response = WebsocketFailResponse(item_id=str(data["item"]["id"]))
         return response.model_dump(mode="json")
 
 
@@ -53,20 +54,24 @@ class WebSocketContext:
         self.manager = manager
 
     @property
-    def worker_id(self) -> str:
-        return self.data.get("worker_id")
+    def error_msg(self) -> str:
+        return self.data.get("item", {}).get("error_msg", "Unknown error")
+
+    @property
+    def get_stdout(self) -> str:
+        return self.data.get("item", {}).get("stdout", "No stdout provided")
+
+    @property
+    def get_stderr(self) -> str:
+        return self.data.get("item", {}).get("stderr", "No stderr provided")
 
     @property
     def queue_name(self) -> str:
-        return self.data.get("queue_name")
+        return self.data.get("queue_name", None)
 
     @property
-    def item_id(self) -> UUID:
-        return UUID(self.data.get("item", {}).get("id"))
-
-    @property
-    def error_msg(self) -> str:
-        return self.data.get("item", {}).get("error_msg", "Unknown error")
+    def worker_id(self) -> str:
+        return self.data.get("worker_id", None)
 
 
 class WebSocketAction(ABC):
@@ -83,16 +88,13 @@ class GetNextItemAction(WebSocketAction):
 
 class MarkSuccessAction(WebSocketAction):
     async def execute(self, context: WebSocketContext):
-        item_id = context.item_id
-        result = context.manager.mark_success(item_id)
+        result = context.manager.mark_success(context.data)
         await context.websocket.send_json(result)
 
 
 class MarkFailAction(WebSocketAction):
     async def execute(self, context: WebSocketContext):
-        item_id = context.item_id
-        error_msg = context.error_msg
-        result = context.manager.mark_fail(item_id, error_msg)
+        result = context.manager.mark_fail(context.data)
         await context.websocket.send_json(result)
 
 

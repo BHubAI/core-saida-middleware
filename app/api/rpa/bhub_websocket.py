@@ -18,7 +18,7 @@ class BHubWebSocket(BaseEndpoint):
         self.manager = WebSocketConnectionManager()
 
         @self.router.websocket("/worker/{queue_name}")
-        async def worker_ws(websocket: WebSocket, queue_name: str):
+        async def worker_ws(websocket: WebSocket):
             await websocket.accept()
 
             try:
@@ -26,18 +26,17 @@ class BHubWebSocket(BaseEndpoint):
                     message = await websocket.receive_text()
                     data = json.loads(message)
                     action_name = data.get("action")
-                    data["queue_name"] = queue_name
 
                     action = ACTION_REGISTRY.get(action_name)
                     if not action:
-                        await websocket.send_json({"error": f"Ação '{action_name}' inválida."})
+                        await websocket.send_json({"WebSocket Error": f"Ação '{action_name}' inválida."})
                         continue
 
                     try:
                         context = WebSocketContext(websocket, data, self.manager)
                         await action.execute(context)
                     except Exception as e:
-                        await websocket.send_json({"error": str(e)})
+                        await websocket.send_json({"WebSocket Error": str(e)})
 
             except WebSocketDisconnect:
                 worker_id = data.get("worker_id", "unknown")

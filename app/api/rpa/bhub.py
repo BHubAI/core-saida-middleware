@@ -47,6 +47,15 @@ class BHubQueuesEndpoint(BaseEndpoint):
 
             return AvaiableItems(items=items)
 
+        @self.router.get("/queues/{queue_name}/retired")
+        def get_retired_items(queue_name: str):
+            items = self.queue_service.get_retired_items(queue_name)
+
+            if not items:
+                return NoItemsAvaiable(message="No items in RETIRED state at the moment")
+
+            return AvaiableItems(items=items)
+
         @self.router.put("/queues/{queue_name}/toggle", response_model=QueueStatusResponse)
         def toggle_queue_status(queue_name: str):
             queue = self.queue_service.toggle_queue_status(queue_name)

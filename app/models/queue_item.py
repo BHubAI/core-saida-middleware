@@ -30,9 +30,16 @@ class QueueItem(SQLModel, table=True):
     max_attempts: int = Field(default=3, sa_column=Column(Integer))
 
     error: Optional[str] = Field(default=None, description="Error message if failed")
+
     locked_by: Optional[str] = Field(default=None, description="Worker that locked the item")
     locked_at: Optional[datetime] = Field(default=None, sa_column=Column(DateTime(timezone=True), nullable=True))
 
+    started_at: datetime = Field(
+        default_factory=datetime.utcnow, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
+    finished_at: datetime = Field(
+        default_factory=datetime.utcnow, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
     created_at: datetime = Field(
         default_factory=datetime.utcnow, sa_column=Column(DateTime(timezone=True), nullable=False)
     )

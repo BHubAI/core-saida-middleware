@@ -1,8 +1,8 @@
-"""init schema with RPAStatus
+"""init queue and queue_item tables
 
-Revision ID: fa8e9770a58a
+Revision ID: a11e38e309f9
 Revises: 29870d20b68f
-Create Date: 2025-05-22 22:20:24.320229
+Create Date: 2025-05-27 19:17:15.976112
 
 """
 import sqlalchemy as sa
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
-revision = 'fa8e9770a58a'
+revision = 'a11e38e309f9'
 down_revision = '29870d20b68f'
 branch_labels = None
 depends_on = None
@@ -31,7 +31,7 @@ def upgrade() -> None:
     op.create_table('queue_item',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('queue_id', sa.Integer(), nullable=False),
-    sa.Column('status', sa.Enum('RUNNING', 'STOPPED', 'PENDING', 'SUCCESS', 'FAILED', name='rpastatus'), nullable=False),
+    sa.Column('status', sa.Enum('RUNNING', 'STOPPED', 'PENDING', 'SUCCESS', 'RETIRED', 'FAILED', name='rpastatus'), nullable=False),
     sa.Column('payload', sa.JSON(), nullable=True),
     sa.Column('priority', sa.Integer(), nullable=True),
     sa.Column('attempts', sa.Integer(), nullable=True),
@@ -39,6 +39,8 @@ def upgrade() -> None:
     sa.Column('error', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('locked_by', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('locked_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('started_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('finished_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.ForeignKeyConstraint(['queue_id'], ['queue.id'], ),
