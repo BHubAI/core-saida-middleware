@@ -27,7 +27,7 @@ class QueueService:
             queue_id=queue.id,
             payload=item_data.payload,
             priority=item_data.priority,
-            status="pending",
+            status=RPAStatus.PENDING,
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow(),
         )
@@ -61,7 +61,7 @@ class QueueService:
 
         item = (
             db.query(QueueItem)
-            .filter_by(queue_id=queue.id, status="pending")
+            .filter_by(queue_id=queue.id, status=RPAStatus.PENDING)
             .order_by(QueueItem.priority.desc(), QueueItem.created_at)
             .with_for_update(skip_locked=True)
             .first()

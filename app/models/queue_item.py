@@ -12,6 +12,7 @@ class RPAStatus(str, Enum):
     STOPPED = "stopped"
     PENDING = "pending"
     SUCCESS = "success"
+    RETIRED = "retired"
     FAILED = "failed"
 
 

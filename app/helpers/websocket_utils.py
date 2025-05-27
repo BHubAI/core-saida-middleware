@@ -46,7 +46,7 @@ class WebSocketConnectionManager:
 
 
 class WebSocketContext:
-    def __init__(self, websocket: WebSocket, data: dict, db, manager):
+    def __init__(self, websocket: WebSocket, data: dict, db, manager: WebSocketConnectionManager):
         self.websocket = websocket
         self.data = data
         self.db = db
