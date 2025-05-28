@@ -14,23 +14,7 @@ from service.camunda.base import CamundaProcessStarter
 
 
 class FechamentoFolha3Process(CamundaProcessStarter):
-    INCLUDED_CNPJS = [
-        "29567304000117",
-        "39827115000190",
-        "49764056000101",
-        "35828673000119",
-        "43379065000100",
-        "12453374000141",
-        "38340695000123",
-        "41541243000114",
-        "54284214000166",
-        "50620489000172",
-        "44655110000167",
-        "12603959000109",
-        "30473147000160",
-        "15329825000121",
-        "48749288000128",
-    ]
+    INCLUDED_CNPJS = []
 
     def __init__(self, *args, **kwargs):
         super().__init__("fechamento_folha_dp_3", *args, **kwargs)
@@ -42,13 +26,12 @@ class FechamentoFolha3Process(CamundaProcessStarter):
     def ano_corrente(self):
         return datetime.datetime.now().year
 
-    def get_mes_competencia(self):
-        """Se dia do mês menor que 10, retorna mês anterior, se maior ou igual a 10, retorna mês atual"""
-        if datetime.datetime.now().day < 10:
-            return datetime.datetime.now().month - 1
-        return datetime.datetime.now().month - 1  # TODO fix this, forcando mes anterior porque rodamos com atraso
+    def get_mes_competencia(self, customer_data: dict):
+        if customer_data["Data de pagamento de folha (tratado)"] == "5":
+            return datetime.datetime.now().month + 1
+        return datetime.datetime.now().month
 
-    def mes_corrente_ptbr(self):
+    def mes_corrente_ptbr(self, customer_data: dict):
         meses = {
             1: "Janeiro",
             2: "Fevereiro",
@@ -64,11 +47,11 @@ class FechamentoFolha3Process(CamundaProcessStarter):
             12: "Dezembro",
         }
 
-        mes_competencia = self.get_mes_competencia()
+        mes_competencia = self.get_mes_competencia(customer_data)
         return meses[mes_competencia]
 
-    def mes_ano_ptbr(self):
-        return f"{self.mes_corrente_ptbr()}/{self.ano_corrente()}"
+    def mes_ano_ptbr(self, customer_data: dict):
+        return f"{self.mes_corrente_ptbr(customer_data)}/{self.ano_corrente()}"
 
     def get_upload_url(self):
         # TODO: Mover para variaveis de ambiente
@@ -85,6 +68,15 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         if customer_data["útil ou corrido"] == "útil":
             return "dia útil"
         return "NTH_WORK_DAY"
+
+    def get_data_execucao_dctf(self, customer_data: dict):
+        if customer_data["Data de pagamento de folha (tratado)"] == "5":
+            return (
+                (datetime.datetime.now().replace(day=1) + datetime.timedelta(days=35))
+                .replace(day=5)
+                .strftime("%Y-%m-%dT00:00:00")
+            )
+        return datetime.datetime.now().replace(day=30).strftime("%Y-%m-%dT00:00:00")
 
     def get_process_content(self):
         """Load process content from s3 object"""
@@ -120,11 +112,11 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "competencia": {
-                "value": "04/2025",
+                "value": f"{self.get_mes_competencia(customer_data)}/{self.ano_corrente()}",
                 "type": "string",
             },
             "cliente_possui_movimento_folha": {
-                "value": True,  # if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
+                "value": True if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
                 "type": "boolean",
             },
             "cliente_elegibilidade": {
@@ -132,23 +124,23 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "assignee": {
-                "value": customer_data["analista responsável"],
+                "value": customer_data["Analista_dp"],
                 "type": "string",
             },
-            # "tem_movimento_folha": {
-            #     "value": True if customer_data["Tipo de folha (tratado)"] != "sem movimento" else False,
-            #     "type": "boolean",
-            # },
-            # "tem_contribuicao": {
-            #     "value": "no",
-            #     "type": "string",
-            # },
+            "tipo_movimento_folha": {
+                "value": customer_data["Tipo de folha (tratado)"],
+                "type": "string",
+            },
+            "tem_contribuicao": {
+                "value": "no",
+                "type": "string",
+            },
             "envia_notificacao": {
                 "value": "no" if customer_data["customer_profile"] == "FAMILY_5" else "yes",
                 "type": "string",
             },
             "mes_ano": {
-                "value": self.mes_ano_ptbr(),
+                "value": self.mes_ano_ptbr(customer_data),
                 "type": "string",
             },
             "cnpj_escritorio": {
@@ -164,11 +156,19 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "caminho_gdocs": {
-                "value": f"/Reports de fechamento/{self.ano_corrente()}/DP/Impostos/{self.mes_corrente_ptbr()}/",
+                "value": f"/Reports de fechamento/{self.ano_corrente()}/DP/Impostos/{self.mes_corrente_ptbr(customer_data)}/",  # noqa: E501
                 "type": "string",
             },
             "start_rpa_url": {
                 "value": f"{settings.CORE_APP_URL}/api/melius/start-rpa",
+                "type": "string",
+            },
+            "waiting_dctf_date": {
+                "value": self.get_data_execucao_dctf(customer_data),
+                "type": "string",
+            },
+            "tracking_endpoint": {
+                "value": f"{settings.CORE_APP_URL}/api/side-effect/log-event",
                 "type": "string",
             },
         }
