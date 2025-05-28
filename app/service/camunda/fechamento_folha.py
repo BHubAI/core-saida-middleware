@@ -45,11 +45,6 @@ class FechamentoFolha3Process(CamundaProcessStarter):
     def ano_corrente(self):
         return datetime.datetime.now().year
 
-    def get_mes_competencia(self, customer_data: dict):
-        if customer_data["Data de pagamento de folha (tratado)"] == "5":
-            return datetime.datetime.now().month + 1
-        return datetime.datetime.now().month
-
     def mes_corrente_ptbr(self, customer_data: dict):
         meses = {
             1: "Janeiro",
@@ -66,7 +61,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
             12: "Dezembro",
         }
 
-        mes_competencia = self.get_mes_competencia(customer_data)
+        mes_competencia = datetime.datetime.now().month
         return meses[mes_competencia]
 
     def mes_ano_ptbr(self, customer_data: dict):
@@ -93,9 +88,16 @@ class FechamentoFolha3Process(CamundaProcessStarter):
             return (
                 (datetime.datetime.now().replace(day=1) + datetime.timedelta(days=35))
                 .replace(day=5)
-                .strftime("%Y-%m-%dT00:00:00")
+                .strftime("%Y-%m-%dT06:00:00-03:00")
             )
-        return datetime.datetime.now().replace(day=30).strftime("%Y-%m-%dT00:00:00")
+        return datetime.datetime.now().replace(day=30).strftime("%Y-%m-%dT06:00:00-03:00")
+
+    def get_data_execucao_fgts(self, customer_data: dict):
+        return (
+            (datetime.datetime.now().replace(day=1) + datetime.timedelta(days=40))
+            .replace(day=11)
+            .strftime("%Y-%m-%dT06:00:00-03:00")
+        )
 
     def get_process_content(self):
         """Load process content from s3 object"""
@@ -104,8 +106,6 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         csv_file = StringIO(process_data)
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
-            if row["ID"] in self.INCLUDED_CNPJS:
-                continue
             yield row
 
     def get_process_variables(self, customer_data: dict):
@@ -133,7 +133,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "competencia": {
-                "value": f"{self.get_mes_competencia(customer_data)}/{self.ano_corrente()}",
+                "value": datetime.datetime.now().strftime("%m/%Y"),
                 "type": "string",
             },
             "cliente_possui_movimento_folha": {
@@ -186,6 +186,10 @@ class FechamentoFolha3Process(CamundaProcessStarter):
             },
             "waiting_dctf_date": {
                 "value": self.get_data_execucao_dctf(customer_data),
+                "type": "string",
+            },
+            "waiting_fgts_date": {
+                "value": self.get_data_execucao_fgts(customer_data),
                 "type": "string",
             },
             "tracking_endpoint": {
