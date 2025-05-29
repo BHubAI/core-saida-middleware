@@ -4,11 +4,13 @@ from uuid import UUID
 
 from api.base.endpoints import BaseEndpoint
 from fastapi import HTTPException, Request
+from fastapi.responses import HTMLResponse
 from schemas.queues import (
     AvaiableItems,
     ItemAddedToQueue,
     NoItemsAvaiable,
     QueueCreatedResponse,
+    QueueDeletedResponse,
     QueueItemCreate,
     QueueItemOut,
     QueueStatusResponse,
@@ -30,7 +32,13 @@ class BHubQueuesEndpoint(BaseEndpoint):
             response = self.queue_service.create_queue(queue_name, queue_description)
             return QueueCreatedResponse(queue_info=response)
 
-        @self.router.post("/queues/{queue_name}/items")
+        @self.router.delete("/queues/delete/{queue_id}")
+        def delete_queue(queue_id: int):
+            self.queue_service.delete_queue(queue_id)
+
+            return QueueDeletedResponse(queue_id=queue_id)
+
+        @self.router.post("/queues/{queue_name}/add/item")
         def add_item(queue_name: str, item: QueueItemCreate):
             response = self.queue_service.add_item(queue_name, item)
             return ItemAddedToQueue(
@@ -66,7 +74,7 @@ class BHubQueuesEndpoint(BaseEndpoint):
             return QueueStatusResponse(
                 queue_name=queue.name,
                 is_active=queue.is_active,
-                message=f"Fila {'ativada' if queue.is_active else 'pausada'} com sucesso.",
+                message=f"Queue status: {'active' if queue.is_active else 'paused'}.",
             )
 
         # Moved to Websocket
@@ -107,9 +115,26 @@ class BHubLogsEndpoint(BaseEndpoint):
         def get_logs(item_id: str):
             return logs_per_task.get(item_id, [])
 
-        @self.router.get("/logs/formatted/{item_id}")
+        @self.router.get("/logs/formatted/{item_id}", response_class=HTMLResponse)
         def get_formatted_logs(item_id: str):
-            return [
-                f"[{log['task_id']}] [{log['level']}] [{log['timestamp']}] {log['message']}"
-                for log in logs_per_task.get(item_id, [])
-            ]
+            logs = logs_per_task.get(item_id, [])
+
+            if not logs:
+                return HTMLResponse(content=f"<h2>No logs found for item_id: {item_id}</h2>", status_code=404)
+
+            html_content = f"<h2>Logs for Item ID: {item_id}</h2>"
+
+            for log in logs:
+                pre = """
+                    <pre style='
+                        background:#f4f4f4;
+                        padding:10px;
+                        border-radius:5px;
+                        border-style:solid;
+                        border-color:black;
+                    '>
+                """
+                line = pre + f"[{log['task_id']}] [{log['level']}] [{log['timestamp']}] {log['message']}</pre>"
+                html_content += line
+
+            return HTMLResponse(content=html_content, status_code=200)

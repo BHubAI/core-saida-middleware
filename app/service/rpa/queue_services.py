@@ -21,6 +21,15 @@ class QueueService:
         self.db.refresh(new_queue)
         return new_queue
 
+    def delete_queue(self, queue_id: int):
+        queue = self.db.query(Queue).filter_by(id=queue_id).first()
+
+        if not queue:
+            raise HTTPException(status_code=404, detail="Queue not found")
+
+        self.db.delete(queue)
+        self.db.commit()
+
     def add_item(self, queue_name: str, item_data: QueueItemCreate):
         queue = self.db.query(Queue).filter_by(name=queue_name).first()
         if not queue:
@@ -70,7 +79,7 @@ class QueueService:
             raise HTTPException(status_code=404, detail="Queue not found")
 
         if not queue.is_active:
-            raise Exception(f"Fila '{queue_name}' está pausada")
+            raise Exception(f"Queue '{queue_name}' está pausada")
 
         item = (
             self.db.query(QueueItem)

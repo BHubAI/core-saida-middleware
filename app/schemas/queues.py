@@ -33,12 +33,17 @@ class AvaiableItems(BaseModel):
 
 
 class QueueCreatedResponse(BaseModel):
-    status: str = "Queue created"
+    detail: str = "Queue created successfully"
     queue_info: Queue
 
 
+class QueueDeletedResponse(BaseModel):
+    detail: str = "Queue deleted successfully"
+    queue_id: int
+
+
 class ItemAddedToQueue(BaseModel):
-    status: str = "Item added successfully"
+    detail: str = "Item added successfully"
     item_status: RPAStatus = QueueItem.status
     priority: int = QueueItem.priority
 
