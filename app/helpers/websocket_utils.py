@@ -1,9 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Dict
-from uuid import UUID
 
 from fastapi import WebSocket
-from schemas.queues import AvaiableItemResponse, NoItemsAvaiable
+from schemas.queues import AvaiableItemResponse, NoItemsAvaiableResponse
 from schemas.websocket import WebsocketFailResponse, WebsocketSuccessResponse
 from service.rpa.queue_services import QueueService
 
@@ -26,19 +25,19 @@ class WebSocketConnectionManager:
         item = self.queue_service.get_next_item(queue_name, worker_id)
 
         if item is None:
-            return NoItemsAvaiable()
+            return NoItemsAvaiableResponse()
 
         return AvaiableItemResponse(item=item)
 
-    def mark_success(self, item_id: UUID):
+    def mark_success(self, data: dict):
         try:
-            self.queue_service.mark_success(item_id)
+            self.queue_service.mark_success(data)
         except Exception as e:
             raise e
-        response = WebsocketSuccessResponse(item_id=str(item_id))
+        response = WebsocketSuccessResponse(item_id=str(data["item"]["id"]))
         return response.model_dump(mode="json")
 
-    def mark_fail(self, data):
+    def mark_fail(self, data: dict):
         try:
             self.queue_service.mark_fail(data)
         except Exception as e:
@@ -52,18 +51,6 @@ class WebSocketContext:
         self.websocket = websocket
         self.data = data
         self.manager = manager
-
-    @property
-    def error_msg(self) -> str:
-        return self.data.get("item", {}).get("error_msg", "Unknown error")
-
-    @property
-    def get_stdout(self) -> str:
-        return self.data.get("item", {}).get("stdout", "No stdout provided")
-
-    @property
-    def get_stderr(self) -> str:
-        return self.data.get("item", {}).get("stderr", "No stderr provided")
 
     @property
     def queue_name(self) -> str:

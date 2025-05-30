@@ -20,7 +20,7 @@ class QueueItemOut(BaseModel):
         orm_mode = True
 
 
-class NoItemsAvaiable(BaseModel):
+class NoItemsAvaiableResponse(BaseModel):
     message: str = "No items avaiable at the moment"
 
 
@@ -28,7 +28,7 @@ class AvaiableItemResponse(BaseModel):
     item: QueueItem
 
 
-class AvaiableItems(BaseModel):
+class AvaiableItemsResponse(BaseModel):
     items: List[QueueItem]
 
 

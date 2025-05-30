@@ -6,9 +6,9 @@ from api.base.endpoints import BaseEndpoint
 from fastapi import HTTPException, Request
 from fastapi.responses import HTMLResponse
 from schemas.queues import (
-    AvaiableItems,
+    AvaiableItemsResponse,
     ItemAddedToQueue,
-    NoItemsAvaiable,
+    NoItemsAvaiableResponse,
     QueueCreatedResponse,
     QueueDeletedResponse,
     QueueItemCreate,
@@ -51,18 +51,18 @@ class BHubQueuesEndpoint(BaseEndpoint):
             items = self.queue_service.get_pending_items(queue_name)
 
             if not items:
-                return NoItemsAvaiable()
+                return NoItemsAvaiableResponse()
 
-            return AvaiableItems(items=items)
+            return AvaiableItemsResponse(items=items)
 
         @self.router.get("/queues/{queue_name}/retired")
         def get_retired_items(queue_name: str):
             items = self.queue_service.get_retired_items(queue_name)
 
             if not items:
-                return NoItemsAvaiable(message="No items in RETIRED state at the moment")
+                return NoItemsAvaiableResponse(message="No items in RETIRED state at the moment")
 
-            return AvaiableItems(items=items)
+            return AvaiableItemsResponse(items=items)
 
         @self.router.put("/queues/{queue_name}/toggle", response_model=QueueStatusResponse)
         def toggle_queue_status(queue_name: str):
