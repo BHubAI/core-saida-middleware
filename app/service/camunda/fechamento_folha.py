@@ -40,7 +40,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
-        return True
+        return customer_data["Tipo de folha (tratado)"] == "sem movimento"
 
     def ano_corrente(self):
         return datetime.datetime.now().year
@@ -133,7 +133,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
                 "type": "string",
             },
             "competencia": {
-                "value": datetime.datetime.now().strftime("%m/%Y"),
+                "value": "05/2025",  # datetime.datetime.now().strftime("%m/%Y"),
                 "type": "string",
             },
             "cliente_possui_movimento_folha": {
