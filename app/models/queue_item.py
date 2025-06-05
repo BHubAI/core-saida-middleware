@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 from uuid import UUID, uuid4
@@ -35,14 +35,14 @@ class QueueItem(SQLModel, table=True):
     locked_at: Optional[datetime] = Field(default=None, sa_column=Column(DateTime(timezone=True), nullable=True))
 
     started_at: datetime = Field(
-        default_factory=datetime.utcnow, sa_column=Column(DateTime(timezone=True), nullable=True)
+        default_factory=lambda: datetime.now(timezone.utc), sa_column=Column(DateTime(timezone=True), nullable=True)
     )
     finished_at: datetime = Field(
-        default_factory=datetime.utcnow, sa_column=Column(DateTime(timezone=True), nullable=True)
+        default_factory=lambda: datetime.now(timezone.utc), sa_column=Column(DateTime(timezone=True), nullable=True)
     )
     created_at: datetime = Field(
-        default_factory=datetime.utcnow, sa_column=Column(DateTime(timezone=True), nullable=False)
+        default_factory=lambda: datetime.now(timezone.utc), sa_column=Column(DateTime(timezone=True), nullable=False)
     )
     updated_at: datetime = Field(
-        default_factory=datetime.utcnow, sa_column=Column(DateTime(timezone=True), nullable=False)
+        default_factory=lambda: datetime.now(timezone.utc), sa_column=Column(DateTime(timezone=True), nullable=False)
     )

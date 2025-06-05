@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime
 from sqlmodel import Field, SQLModel
@@ -12,5 +12,5 @@ class Queue(SQLModel, table=True):
     description: str = Field(..., description="Description of the queue")
     is_active: bool = Field(sa_column=Column(Boolean, default=True))
     created_at: datetime = Field(
-        default_factory=datetime.utcnow, sa_column=Column(DateTime(timezone=True), nullable=False)
+        default_factory=lambda: datetime.now(timezone.utc), sa_column=Column(DateTime(timezone=True), nullable=False)
     )

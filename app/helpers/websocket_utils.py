@@ -30,19 +30,15 @@ class WebSocketConnectionManager:
         return AvaiableItemResponse(item=item)
 
     def mark_success(self, data: dict):
-        try:
-            self.queue_service.mark_success(data)
-        except Exception as e:
-            raise e
+        self.queue_service.mark_success(data)
         response = WebsocketSuccessResponse(item_id=str(data["item"]["id"]))
+
         return response.model_dump(mode="json")
 
     def mark_fail(self, data: dict):
-        try:
-            self.queue_service.mark_fail(data)
-        except Exception as e:
-            raise e
+        self.queue_service.mark_fail(data)
         response = WebsocketFailResponse(item_id=str(data["item"]["id"]))
+
         return response.model_dump(mode="json")
 
 
@@ -54,17 +50,17 @@ class WebSocketContext:
 
     @property
     def queue_name(self) -> str:
-        return self.data.get("queue_name", None)
+        return self.data.get("queue_name", "")
 
     @property
     def worker_id(self) -> str:
-        return self.data.get("worker_id", None)
+        return self.data.get("worker_id", "")
 
 
 class WebSocketAction(ABC):
     @abstractmethod
-    async def execute(self, websocket: WebSocket, data: dict, manager: WebSocketConnectionManager):
-        pass
+    async def execute(self, context: WebSocketContext):
+        raise NotImplementedError()
 
 
 class GetNextItemAction(WebSocketAction):

@@ -12,7 +12,7 @@ from helpers.websocket_utils import (
 ROUTE_PREFIX = "/api/ws"
 
 
-class BHubWebSocket(BaseEndpoint):
+class BHubRPAWebSocketEndpoint(BaseEndpoint):
     def __init__(self):
         super().__init__(tags=["BHub", "WebSocket"], prefix=ROUTE_PREFIX)
         self.manager = WebSocketConnectionManager()
@@ -24,19 +24,29 @@ class BHubWebSocket(BaseEndpoint):
             try:
                 while True:
                     message = await websocket.receive_text()
-                    data = json.loads(message)
+                    try:
+                        data = json.loads(message)
+                    except json.JSONDecodeError:
+                        await websocket.send_json({"WebSocketError": "Invalid JSON format"})
+                        continue
+
+                    if not isinstance(data, dict):
+                        await websocket.send_json({"WebSocketError": "Message must be a JSON object"})
+                        continue
+
                     action_name = data.get("action")
 
                     action = ACTION_REGISTRY.get(action_name)
                     if not action:
-                        await websocket.send_json({"WebSocket Error": f"Ação '{action_name}' inválida."})
+                        await websocket.send_json({"WebSocketError": f"Ação '{action_name}' inválida."})
                         continue
 
                     try:
                         context = WebSocketContext(websocket, data, self.manager)
                         await action.execute(context)
                     except Exception as e:
-                        await websocket.send_json({"WebSocket Error": str(e)})
+                        await websocket.send_json({"WebSocketError": str(e)})
+                        await self.manager.disconnect(context.worker_id)
 
             except WebSocketDisconnect:
                 worker_id = data.get("worker_id", "unknown")

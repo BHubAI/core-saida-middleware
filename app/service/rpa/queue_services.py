@@ -1,9 +1,10 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from api.deps import DBSession, get_session
 from fastapi import HTTPException
 from models import Queue, QueueItem
 from schemas.queues import QueueItemCreate, RPAStatus
+from sqlalchemy.exc import IntegrityError
 
 
 class QueueService:
@@ -15,11 +16,15 @@ class QueueService:
         if self.db.query(Queue).filter(Queue.name == queue_name).first():
             raise HTTPException(status_code=400, detail="Queue with this name already exists")
 
-        new_queue = Queue(name=queue_name, description=queue_description, created_at=datetime.utcnow())
-        self.db.add(new_queue)
-        self.db.commit()
-        self.db.refresh(new_queue)
-        return new_queue
+        try:
+            new_queue = Queue(name=queue_name, description=queue_description, created_at=datetime.now(timezone.utc))
+            self.db.add(new_queue)
+            self.db.commit()
+            self.db.refresh(new_queue)
+            return new_queue
+        except IntegrityError:
+            self.db.rollback()
+            raise HTTPException(status_code=400, detail="Queue with this name already exists")
 
     def delete_queue(self, queue_id: int):
         queue = self.db.query(Queue).filter_by(id=queue_id).first()
@@ -35,18 +40,22 @@ class QueueService:
         if not queue:
             raise HTTPException(status_code=404, detail="Queue not found")
 
-        new_item = QueueItem(
-            queue_id=queue.id,
-            payload=item_data.payload,
-            priority=item_data.priority,
-            status=RPAStatus.PENDING,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-        )
-        self.db.add(new_item)
-        self.db.commit()
-        self.db.refresh(new_item)
-        return new_item
+        try:
+            new_item = QueueItem(
+                queue_id=queue.id,
+                payload=item_data.payload,
+                priority=item_data.priority,
+                status=RPAStatus.PENDING,
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc),
+            )
+            self.db.add(new_item)
+            self.db.commit()
+            self.db.refresh(new_item)
+            return new_item
+        except IntegrityError:
+            self.db.rollback()
+            raise HTTPException(status_code=400, detail="Queue with this name already exists")
 
     def get_pending_items(self, queue_name: str):
         queue = self.db.query(Queue).filter_by(name=queue_name).first()
@@ -102,7 +111,7 @@ class QueueService:
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
         item.status = RPAStatus.SUCCESS
-        item.updated_at = datetime.utcnow()
+        item.updated_at = datetime.now(timezone.utc)
         item.started_at = data["started_at"]
         item.finished_at = data["finished_at"]
         self.db.commit()
@@ -114,7 +123,7 @@ class QueueService:
 
         item.attempts += 1
         item.error = data["stderr"]
-        item.updated_at = datetime.utcnow()
+        item.updated_at = datetime.now(timezone.utc)
         item.started_at = data["started_at"]
         item.finished_at = data["finished_at"]
 
