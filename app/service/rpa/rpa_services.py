@@ -169,7 +169,7 @@ def handle_webhook_request(request: MeliusWebhookRequest, db_session: DBSession)
                 process_id=request.id_tarefa_cliente,
                 event_type=RPAEventTypes.FINISH,
                 event_source=RPASource.MELIUS,
-                event_data=rpa_event_logs[0].event_data,
+                event_data=request.model_dump(),
             )
         )
 
