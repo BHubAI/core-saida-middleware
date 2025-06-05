@@ -1,9 +1,10 @@
 import logging
 from functools import lru_cache
 
-from core.config import settings
-from core.logging_config import get_logger
 from datadog.dogstatsd.base import DogStatsd
+
+from app.core.config import settings
+from app.core.logging_config import get_logger
 
 
 # Initialize the Datadog statsd client

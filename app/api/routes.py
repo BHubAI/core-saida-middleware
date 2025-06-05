@@ -1,11 +1,12 @@
-from api.audit.rpa_audit import RPAAuditoriaEndpoint
-from api.base.endpoints import BaseEndpoint
-from api.camunda.process_starter import ProcessMessageEndpoint
-from api.camunda.side_effect import SideEffectEndpoint
-from api.deps import DDLogger
-from api.rpa.melius import MeliusEndpoint
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse, PlainTextResponse
+
+from app.api.audit.rpa_audit import RPAAuditoriaEndpoint
+from app.api.base.endpoints import BaseEndpoint
+from app.api.camunda.process_starter import ProcessMessageEndpoint
+from app.api.camunda.side_effect import SideEffectEndpoint
+from app.api.deps import DDLogger
+from app.api.rpa.melius import MeliusEndpoint
 
 
 class Routers:
