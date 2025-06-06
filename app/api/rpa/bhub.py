@@ -76,7 +76,7 @@ class BHubRPALogsEndpoint(BaseEndpoint):
     """NOTE: this endpoint will be removed soon and a new way to handle this operation will be applied"""
 
     def __init__(self):
-        super().__init__(tags=["BHub", "Logs"], prefix="api/bhub/logs")
+        super().__init__(tags=["BHub", "Logs"], prefix="/api/bhub/logs")
         self.logs_per_task: Dict[str, list] = defaultdict(list)
 
         @self.router.post("/save/{item_id}")
