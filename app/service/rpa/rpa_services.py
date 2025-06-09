@@ -55,7 +55,7 @@ def start_melius_rpa(process_data: dict, db_session: DBSession):
             )
         )
         db_session.commit()
-        raise RPAException(str(e))
+        raise RPAException(str(e.response.content.decode()))
     except Exception as e:
         logger.error(f"Error starting Melius RPA: {e}")
         db_session.add(

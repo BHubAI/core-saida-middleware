@@ -14,33 +14,15 @@ from service.camunda.base import CamundaProcessStarter
 
 
 class FechamentoFolha3Process(CamundaProcessStarter):
-    INCLUDED_CNPJS = [
-        "718a6e45906a48e39a102f813eefad43",
-        "ac1f2cddc56b42aa8ccf65223f2436d9",
-        "0abaa38a403b4a4a998930e627ce5691",
-        "0bf8e3b8650e4876b343589f6fe2d492",
-        "68c2ae7026604fd3ba9ed4efbfdd1019",
-        "5b1791774d6149dea7b55a367d6e83d7",
-        "b77c01c80d254c488b39e476299db6c5",
-        "a450be3dadfc4d778d1b30c9d676b152",
-        "83e3bb6e593e41fab39c06c9c64fbfc6",
-        "e258f4b180a74f88917feda22884db1b",
-        "67c4df82478142b3ba12112fcd773f7d",
-        "54919134e5894f1fa46fae5d8455933d",
-        "612ad87a6d61458fa4bf8cdcb4003402",
-        "8114acfdcc364f25b1941d891ed8f8e9",
-        "eb04df48ac484aea917fbcbc411c60ea",
-        "a78255cae72a40c1a04b5358bd04319d",
-        "d7dda9b9eb634f8cb7b371e4bd890a29",
-        "1de753217fe848678274a0b2aad85d33",
-    ]
+    INCLUDED_CNPJS = []
 
     def __init__(self, *args, **kwargs):
-        super().__init__("fechamento_folha_dp_3", *args, **kwargs)
+        # super().__init__("fechamento_folha_dp_3", *args, **kwargs)
+        super().__init__("tarefa_esocial_familia3", *args, **kwargs)
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
-        return customer_data["Tipo de folha (tratado)"] == "sem movimento"
+        return "115398" in customer_data["erp_operado"]
 
     def ano_corrente(self):
         return datetime.datetime.now().year
