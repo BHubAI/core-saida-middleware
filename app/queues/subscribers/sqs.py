@@ -3,10 +3,11 @@ from typing import Any, Dict, Optional
 
 import boto3
 from botocore.config import Config
-from core.config import settings
-from core.logging import setup_logger
 from db.session import get_session
 from sqlalchemy.orm import Session
+
+from app.core.config import settings
+from app.core.logging import setup_logger
 
 
 class SQSSubscriber:

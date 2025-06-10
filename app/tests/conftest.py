@@ -1,11 +1,12 @@
 import main
 import pytest
-from core.config import settings
-from db.session import get_session
 from fastapi.testclient import TestClient
-from models.base import BaseModel
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
+
+from app.core.config import settings
+from app.db.session import get_session
+from app.models.base import BaseModel
 
 
 @pytest.fixture(autouse=True)
