@@ -1,4 +1,13 @@
-class RegimeTributario:
+from enum import StrEnum
+
+
+class TipoObrigacao(StrEnum):
+    DAS = "DAS"
+    DCTFWeb = "DCTFWeb"
+    FGTS = "FGTS"
+
+
+class RegimeTributario(StrEnum):
     NATIONAL_SIMPLE = "SIMPLES NACIONAL"
 
     @classmethod

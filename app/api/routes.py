@@ -1,6 +1,7 @@
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse, PlainTextResponse
 
+from app.api.audit.obrigacoes_acessorias import ObrigacoesAcessoriasEndpoint
 from app.api.audit.rpa_audit import RPAAuditoriaEndpoint
 from app.api.base.endpoints import BaseEndpoint
 from app.api.camunda.process_starter import ProcessMessageEndpoint
@@ -16,6 +17,7 @@ class Routers:
             ProcessMessageEndpoint(),
             MeliusEndpoint(),
             RPAAuditoriaEndpoint(),
+            ObrigacoesAcessoriasEndpoint(),
         ]
 
     def get_routers(self):

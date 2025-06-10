@@ -2,11 +2,12 @@ import datetime
 import logging
 
 import requests
-from api.deps import DBSession
-from core.config import settings
-from core.exceptions import ObjectNotFound
-from models.camunda import ProcessEventLog, ProcessEventTypes
-from service import camunda
+
+from app.api.deps import DBSession
+from app.core.config import settings
+from app.core.exceptions import ObjectNotFound
+from app.models.camunda import ProcessEventLog, ProcessEventTypes
+from app.service import camunda
 
 
 class CamundaProcessStarter:
