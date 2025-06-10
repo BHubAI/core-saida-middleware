@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from models.base import BaseModel
@@ -25,7 +25,7 @@ class RPAEventLog(BaseModel, table=True):
     event_data: dict = Field(sa_column=Column(JSON), description="The data of the event")
     event_source: RPASource = Field(..., description="The source of the event")
     created_at: datetime = Field(
-        sa_column=Column(DateTime(timezone=True), nullable=False), default_factory=datetime.utcnow
+        sa_column=Column(DateTime(timezone=True), nullable=False), default_factory=lambda: datetime.now(timezone.utc)
     )
 
     def model_dump_as_csv(self):
