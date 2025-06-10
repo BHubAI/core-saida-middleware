@@ -2,8 +2,8 @@ name: Deploy to Amazon ECS Production
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
 
 env:
   AWS_REGION: us-east-1
