@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     DD_AGENT_HOST: str = Field(default="datadog-agent")
     DD_AGENT_PORT: int = Field(default=8125)
     DD_ENV: str = Field(default="dev")
-    DD_SERVICE: str = Field(default="core-saida-orchestrator")
+    DD_SERVICE: str = Field(default="core-saida-middleware")
     DD_VERSION: str = Field(default="1.0.0")
 
     # Database settings

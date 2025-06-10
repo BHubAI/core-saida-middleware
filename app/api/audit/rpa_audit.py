@@ -1,6 +1,6 @@
-from api.base.endpoints import BaseEndpoint
-from api.deps import DBSession, DDLogger
-from service.audit import rpa_audit
+from app.api.base.endpoints import BaseEndpoint
+from app.api.deps import DBSession, DDLogger
+from app.service.audit import rpa_audit
 
 
 ROUTE_PREFIX = "/api/audit"

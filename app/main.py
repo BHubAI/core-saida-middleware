@@ -1,16 +1,21 @@
 import asyncio
 from contextlib import asynccontextmanager
 
-from api import routes
-from core.config import settings
-from core.exceptions import CoreSaidaOrchestratorException, ObjectNotFound, RPAException
-from core.logging_config import configure_logging, get_logger
-from db.session import add_postgresql_extension
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from queues.subscribers.process_starter_subscriber import ProcessStarterSubscriber
+
+from app.api import routes
+from app.core.config import settings
+from app.core.exceptions import (
+    CoreSaidaMiddlewareException,
+    ObjectNotFound,
+    RPAException,
+)
+from app.core.logging_config import configure_logging, get_logger
+from app.db.session import add_postgresql_extension
+from app.queues.subscribers.process_starter_subscriber import ProcessStarterSubscriber
 
 
 # Configure logging
@@ -67,8 +72,8 @@ async def lifespan(app: FastAPI):
 
 def create_service() -> FastAPI:
     app = FastAPI(
-        title="core-saida-orchestrator",
-        description="Core Saida Orchestrator",
+        title="core-saida-middleware",
+        description="Core Saida Middleware",
         version=settings.VERSION,
         openapi_url=f"/{settings.VERSION}/openapi.json",
         lifespan=lifespan,
@@ -94,10 +99,10 @@ def create_service() -> FastAPI:
         logger.error(f"Object not found: {error_msg}")
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content={"detail": error_msg})
 
-    @app.exception_handler(CoreSaidaOrchestratorException)
-    async def core_saida_orchestrator_exception_handler(request: Request, exc: CoreSaidaOrchestratorException):
+    @app.exception_handler(CoreSaidaMiddlewareException)
+    async def core_saida_middleware_exception_handler(request: Request, exc: CoreSaidaMiddlewareException):
         error_msg = str(exc)
-        logger.error(f"Core Saida Orchestrator error: {error_msg}")
+        logger.error(f"Core Saida Middleware error: {error_msg}")
         return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={"detail": error_msg})
 
     @app.exception_handler(RPAException)

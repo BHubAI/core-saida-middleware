@@ -5,9 +5,9 @@ import datetime
 import json
 from io import StringIO
 
-from core.config import settings
-from helpers import s3_utils
-from service.camunda.base import CamundaProcessStarter
+from app.core.config import settings
+from app.helpers import s3_utils
+from app.service.camunda.base import CamundaProcessStarter
 
 
 # from service.camunda.enums import RegimeTributario

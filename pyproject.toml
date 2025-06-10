@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "core-saida-orchestrator"
+name = "core-saida-middleware"
 version = "1.0.0"
 description = "Base project for building fastapi backends"
 authors = ["nickatnight <nickkelly.858@gmail.com>"]

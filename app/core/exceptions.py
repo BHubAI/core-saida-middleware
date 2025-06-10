@@ -1,10 +1,10 @@
-class CoreSaidaOrchestratorException(Exception):
+class CoreSaidaMiddlewareException(Exception):
     pass
 
 
-class RPAException(CoreSaidaOrchestratorException):
+class RPAException(CoreSaidaMiddlewareException):
     pass
 
 
-class ObjectNotFound(CoreSaidaOrchestratorException):
+class ObjectNotFound(CoreSaidaMiddlewareException):
     pass
