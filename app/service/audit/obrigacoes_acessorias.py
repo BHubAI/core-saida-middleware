@@ -5,6 +5,7 @@ from typing import Dict, List
 
 import numpy as np
 from fastapi import UploadFile
+from fastapi.exceptions import RequestValidationError
 
 from app.api.deps import DBSession
 from app.models.audit import HistoricoObrigacoes
@@ -29,10 +30,10 @@ def import_desvio_from_file(uoloaded_file: UploadFile, db_session: DBSession) ->
         competencia_str = row.get("competencia")
 
         if not all([row.get("cnpj"), row.get("competencia"), row.get("tipo_obrigacao")]):
-            raise ValueError(f"Missing values in row {row}")
+            raise RequestValidationError(f"Missing values in row {row}")
 
         if not competencia_str:
-            raise ValueError(f"Missing competencia in row {row}")
+            raise RequestValidationError(f"Missing competencia in row {row}")
 
         month, year = competencia_str.split("/")
         competencia = datetime.strptime(f"{year}-{month.zfill(2)}-01", "%Y-%m-%d")
@@ -65,12 +66,14 @@ def calcula_desvio_obrigacao(cnpj: str, tipo_obrigacao: str, current_value: floa
     """
 
     # Busca o valor da obrigação no banco de dados
-    historico = db_session.query(HistoricoObrigacoes).filter(
-        HistoricoObrigacoes.cnpj == cnpj, HistoricoObrigacoes.tipo_obrigacao == tipo_obrigacao
+    historico = (
+        db_session.query(HistoricoObrigacoes)
+        .filter(HistoricoObrigacoes.cnpj == cnpj, HistoricoObrigacoes.tipo_obrigacao == tipo_obrigacao)
+        .all()
     )
 
     if not historico:
-        raise ValueError(f"Obrigacao not found for cnpj {cnpj} and tipo_obrigacao {tipo_obrigacao}")
+        raise RequestValidationError(f"Obrigacao not found for cnpj {cnpj} and tipo_obrigacao {tipo_obrigacao}")
 
     values = [valor.valor for valor in historico]
     desvio = np.std(values)
