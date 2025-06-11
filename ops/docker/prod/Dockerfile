@@ -32,12 +32,12 @@ ARG ENV_FILE
 COPY ${ENV_FILE} /app/.env
 # RUN set -a && . /app/.env && set +a
 
-WORKDIR /app
+WORKDIR /bhub
 
 # Copy all content from the local app/ folder to the /app folder in the container
-COPY app/ /bhub/app/
+COPY . /bhub/
 
-ENV PYTHONPATH=/bhub/app
+ENV PYTHONPATH=/bhub
 
 # Expose the port the app runs on
 EXPOSE 8000

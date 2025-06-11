@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - staging
+      - dev-deploy
 
 env:
   AWS_REGION: us-east-1

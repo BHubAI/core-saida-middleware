@@ -17,9 +17,9 @@ COPY --from=base /tmp/requirements.txt /app/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
-WORKDIR /app
-COPY . /bhub/app/
+WORKDIR /bhub/app
+COPY . /bhub/
 
-ENV PYTHONPATH=/bhub/app
+ENV PYTHONPATH=/bhub
 
 EXPOSE 8000

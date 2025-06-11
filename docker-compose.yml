@@ -62,7 +62,7 @@ services:
       - localstack
     environment:
       - PYTHONUNBUFFERED=0
-      - PYTHONPATH=/bhub/app
+      - PYTHONPATH=/bhub
       - AWS_ENDPOINT_URL=http://localstack:4566
       - POSTGRES_HOST=db
     tty: true
