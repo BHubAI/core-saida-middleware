@@ -3,6 +3,7 @@ from datetime import datetime
 from io import StringIO
 from typing import Dict, List
 
+import numpy as np
 from fastapi import UploadFile
 
 from app.api.deps import DBSession
@@ -40,9 +41,42 @@ def import_desvio_from_file(uoloaded_file: UploadFile, db_session: DBSession) ->
             cnpj=row.get("cnpj"),  # type: ignore
             competencia=competencia,
             tipo_obrigacao=row.get("tipo_obrigacao"),  # type: ignore
+            valor=row.get("valor"),  # type: ignore
         )
         db_session.add(desvio)
         imported_records.append(row)
 
     db_session.commit()
     return imported_records
+
+
+def calcula_desvio_obrigacao(cnpj: str, tipo_obrigacao: str, current_value: float, db_session: DBSession):
+    """
+    Verifica o desvio padrão de um valor em relação a uma lista de valores históricos.
+
+    Args:
+        cnpj: CNPJ do cliente
+        tipo_obrigacao: Tipo de obrigação
+        current_value: Valor atual da obrigação
+        db_session: Sessão do banco de dados
+
+    Returns:
+        Numero de desvios padrão do valor atual em relação aos valores históricos
+    """
+
+    # Busca o valor da obrigação no banco de dados
+    historico = db_session.query(HistoricoObrigacoes).filter(
+        HistoricoObrigacoes.cnpj == cnpj, HistoricoObrigacoes.tipo_obrigacao == tipo_obrigacao
+    )
+
+    if not historico:
+        raise ValueError(f"Obrigacao not found for cnpj {cnpj} and tipo_obrigacao {tipo_obrigacao}")
+
+    values = [valor.valor for valor in historico]
+    desvio = np.std(values)
+
+    diff = abs(current_value - np.mean(values))
+
+    num_desvios = diff / desvio if desvio != 0 else 0
+
+    return num_desvios

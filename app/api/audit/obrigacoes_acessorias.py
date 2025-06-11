@@ -2,7 +2,11 @@ from fastapi import UploadFile
 
 from app.api.base.endpoints import BaseEndpoint
 from app.api.deps import DBSession, DDLogger
-from app.service.audit.obrigacoes_acessorias import import_desvio_from_file
+from app.schemas.audit_schema import CalculoDesvioRequest
+from app.service.audit.obrigacoes_acessorias import (
+    calcula_desvio_obrigacao,
+    import_desvio_from_file,
+)
 
 
 ROUTE_PREFIX = "/api/obrigacoes"
@@ -29,3 +33,14 @@ class ObrigacoesAcessoriasEndpoint(BaseEndpoint):
             except Exception as e:
                 logger.error(f"Error importing desvio: {e}")
                 raise e
+
+        @self.router.post("/calculo-desvio")
+        def _get_desvio(request: CalculoDesvioRequest, db_session: DBSession):
+            desvios = calcula_desvio_obrigacao(request.cnpj, request.tipo_obrigacao, request.current_value, db_session)
+
+            return {
+                "cnpj": request.cnpj,
+                "current_value": request.current_value,
+                "tipo_obrigacao": request.tipo_obrigacao,
+                "desvio": desvios,
+            }

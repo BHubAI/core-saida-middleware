@@ -11,3 +11,4 @@ class HistoricoObrigacoes(BaseModel, table=True):
     cnpj: str = Field(..., description="CNPJ do cliente", index=True)
     competencia: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
     tipo_obrigacao: str = Field(..., description="Tipo de obrigação")
+    valor: float = Field(..., description="Valor da obrigação")

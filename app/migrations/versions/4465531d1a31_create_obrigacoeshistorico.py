@@ -21,12 +21,14 @@ depends_on = None
 def upgrade() -> None:
     op.execute("CREATE SEQUENCE historico_obrigacoes_id_seq START WITH 1 INCREMENT BY 1")
     op.create_table(
-      "historico_obrigacoes",
-      sa.Column("id", sa.Integer, primary_key=True, server_default=sa.text("nextval('historico_obrigacoes_id_seq')")),
-      sa.Column("cnpj", sa.String(length=55), nullable=False),
-      sa.Column("competencia", sa.DateTime(timezone=True), nullable=False),
-      sa.Column("tipo_obrigacao", sa.String(length=255), nullable=False),
-   )
+        "historico_obrigacoes",
+        sa.Column("id", sa.Integer, primary_key=True, server_default=sa.text("nextval('historico_obrigacoes_id_seq')")),
+        sa.Column("cnpj", sa.String(length=55), nullable=False),
+        sa.Column("competencia", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("tipo_obrigacao", sa.String(length=255), nullable=False),
+        sa.Column("valor", sa.Float, nullable=False),
+    )
+
 
 def downgrade() -> None:
     op.drop_table("historico_obrigacoes")
