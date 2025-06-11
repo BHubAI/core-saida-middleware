@@ -36,11 +36,20 @@ class ObrigacoesAcessoriasEndpoint(BaseEndpoint):
 
         @self.router.post("/calculo-desvio")
         def _get_desvio(request: CalculoDesvioRequest, db_session: DBSession):
-            desvios = calcula_desvio_obrigacao(request.cnpj, request.tipo_obrigacao, request.current_value, db_session)
+            desvio = calcula_desvio_obrigacao(request.cnpj, request.tipo_obrigacao, request.current_value, db_session)
+
+            def label_desvio(desvio):
+                if 2 <= desvio < 3.5:
+                    return "MEDIUM"
+                elif desvio >= 3.5:
+                    return "HIGH"
+                else:
+                    return "OK"
 
             return {
                 "cnpj": request.cnpj,
                 "current_value": request.current_value,
                 "tipo_obrigacao": request.tipo_obrigacao,
-                "desvio": desvios,
+                "desvio": desvio,
+                "label_desvio": label_desvio(desvio),
             }

@@ -23,6 +23,7 @@ httpx = "^0.28.1"
 requests = "^2.32.3"
 python-multipart = "^0.0.20"
 datadog = "^0.47.0"
+numpy = "^2.3.0"
 
 
 [tool.poetry.dev-dependencies]
