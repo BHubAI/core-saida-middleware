@@ -27,17 +27,12 @@ COPY --from=base /tmp/requirements.txt /app/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
-# Set environment variables from env file
-ARG ENV_FILE
-COPY ${ENV_FILE} /app/.env
-# RUN set -a && . /app/.env && set +a
-
-WORKDIR /bhub
+WORKDIR /app
 
 # Copy all content from the local app/ folder to the /app folder in the container
-COPY . /bhub/
+COPY app/ /app/
 
-ENV PYTHONPATH=/bhub
+ENV PYTHONPATH=/app
 
 # Expose the port the app runs on
 EXPOSE 8000

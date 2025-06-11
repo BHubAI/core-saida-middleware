@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+cd /app
+
 echo "🟡 Rodando migrations Alembic..."
 alembic upgrade head
 echo "✅ Migrations concluídas."
