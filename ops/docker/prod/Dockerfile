@@ -27,12 +27,12 @@ COPY --from=base /tmp/requirements.txt /app/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
-WORKDIR /app
+WORKDIR /bhub
 
-# Copy all content from the local app/ folder to the /app folder in the container
-COPY app/ /app/
+# Copy all content from the local app/ folder to the /bhub/app folder in the container
+COPY app/ /bhub/app/
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/bhub
 
 # Expose the port the app runs on
 EXPOSE 8000

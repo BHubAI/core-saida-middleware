@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-cd /app
+cd /bhub/app
 
 echo "🟡 Rodando migrations Alembic..."
 alembic upgrade head
