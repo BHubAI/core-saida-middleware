@@ -22,7 +22,7 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
-        return "115398" in customer_data["erp_operado"]
+        return True
 
     def ano_corrente(self):
         return datetime.datetime.now().year
