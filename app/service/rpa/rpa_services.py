@@ -74,13 +74,14 @@ def _make_camunda_request(url, params: dict):
     headers = {
         "Content-Type": "application/json",
     }
+    timeout = httpx.Timeout(30.0)
 
     if settings.ENV == "production":
         headers["X-API-Key"] = f"{settings.CAMUNDA_API_TOKEN}"
-        response = httpx.post(url, json=params, headers=headers)
+        response = httpx.post(url, json=params, headers=headers, timeout=timeout)
     else:
         auth = httpx.BasicAuth(settings.CAMUNDA_USERNAME, settings.CAMUNDA_PASSWORD)
-        response = httpx.post(url, json=params, headers=headers, auth=auth)
+        response = httpx.post(url, json=params, headers=headers, auth=auth, timeout=timeout)
 
     response.raise_for_status()
 
