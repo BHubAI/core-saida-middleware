@@ -14,11 +14,11 @@ from service.camunda.base import CamundaProcessStarter
 
 
 class FechamentoFolha3Process(CamundaProcessStarter):
-    INCLUDED_CNPJS = []
+    INCLUDED_CNPJS = ["30473147000160", "12603959000109", "44968739000167"]
 
     def __init__(self, *args, **kwargs):
         # super().__init__("fechamento_folha_dp_3", *args, **kwargs)
-        super().__init__("tarefa_esocial_familia3", *args, **kwargs)
+        super().__init__("tarefa_fgts_familia3", *args, **kwargs)
         self.s3_file_path = "dp/fechamento-folha/folha-elegiveis.csv"
 
     def is_eligible(self, customer_data: dict):
@@ -88,6 +88,8 @@ class FechamentoFolha3Process(CamundaProcessStarter):
         csv_file = StringIO(process_data)
         csv_reader = csv.DictReader(csv_file)
         for row in csv_reader:
+            if row["cnpj"] not in self.INCLUDED_CNPJS:
+                continue
             yield row
 
     def get_process_variables(self, customer_data: dict):
