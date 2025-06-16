@@ -23,7 +23,7 @@ httpx = "0.28.1"
 requests = "2.32.3"
 datadog = "^0.47.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 black = "^24.8.0"
 isort = "^5.13.2"
 pytest = "^8.3.3"
