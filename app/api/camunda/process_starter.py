@@ -1,7 +1,7 @@
-from api.base.endpoints import BaseEndpoint
-from api.deps import DBSession, DDLogger
-from schemas.camunda_schema import ProcessKeyRequest
-from service.camunda.base import start_process
+from app.api.base.endpoints import BaseEndpoint
+from app.api.deps import DBSession, DDLogger
+from app.schemas.camunda_schema import ProcessKeyRequest
+from app.service.camunda.base import start_process
 
 
 ROUTE_PREFIX = "/api/process-message"

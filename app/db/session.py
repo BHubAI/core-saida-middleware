@@ -1,10 +1,11 @@
 from typing import Generator
 
-from core.config import settings
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
+
+from app.core.config import settings
 
 
 def get_engine() -> Engine:

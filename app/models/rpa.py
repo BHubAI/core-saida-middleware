@@ -1,8 +1,9 @@
 from datetime import datetime
 from enum import Enum
 
-from models.base import BaseModel
 from sqlmodel import JSON, Column, DateTime, Field
+
+from app.models.base import BaseModel
 
 
 class RPAEventTypes(str, Enum):

@@ -35,9 +35,9 @@ COPY ${ENV_FILE} /app/.env
 WORKDIR /app
 
 # Copy all content from the local app/ folder to the /app folder in the container
-COPY app/ /app/
+COPY app/ /bhub/app/
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/bhub/app
 
 # Expose the port the app runs on
 EXPOSE 8000
