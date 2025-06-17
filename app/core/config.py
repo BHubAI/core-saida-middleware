@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     MELIUS_RPA_URL: str = Field(default="")
     MELIUS_RPA_TOKEN: str = Field(default="")
 
+    # SQS settings
+    QUEUE_RPA_RESULT: str = Field(default="rpa-result-queue")
+
     @field_validator("POOL_SIZE", mode="before")
     @classmethod
     def build_pool(cls, v: Optional[str], values: ValidationInfo) -> Any:
